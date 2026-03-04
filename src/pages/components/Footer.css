@@ -1,0 +1,174 @@
+.footer {
+  background-color: #012950;
+  color: #ecf0f1;
+  padding: 60px 0 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.footer-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  margin-bottom: 40px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-brand {
+  flex: 1;
+  min-width: 250px;
+}
+
+.logo {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.logo span {
+  color: #5bbdff;
+}
+
+.tagline {
+  color: #bdc3c7;
+  margin-bottom: 20px;
+  font-size: 0.95rem;
+}
+
+.social-links {
+  display: flex;
+  gap: 15px;
+}
+
+.social-links a {
+  color: #ecf0f1;
+  font-size: 1.2rem;
+  transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+  color: #3498db;
+}
+
+.footer-links {
+  flex: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.links-column {
+  min-width: 150px;
+}
+
+.links-column h3 {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  color: #3498db;
+  font-weight: 600;
+}
+
+.links-column ul {
+  list-style: none;
+  padding: 0;
+}
+
+.links-column li {
+  margin-bottom: 12px;
+}
+
+.links-column a {
+  color: #bdc3c7;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.links-column a:hover {
+  color: #3498db;
+}
+
+.contact-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin-bottom: 40px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #bdc3c7;
+  font-size: 0.95rem;
+}
+
+.contact-icon {
+  color: #3498db;
+}
+
+.footer-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding-top: 20px;
+  color: #bdc3c7;
+  font-size: 0.9rem;
+}
+
+.payment-methods {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.payment-icons {
+  display: flex;
+  gap: 10px;
+}
+
+.payment-icons img {
+  height: 20px;
+  filter: grayscale(100%) brightness(150%);
+  transition: filter 0.3s ease;
+}
+
+.payment-icons img:hover {
+  filter: grayscale(0%) brightness(100%);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .footer-top {
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .footer-links {
+    width: 100%;
+  }
+  
+  .contact-info {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .payment-methods {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,372 @@
+.stu-auth-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.stu-hero-section {
+  flex: 1;
+  background: linear-gradient(135deg, #4cc9f0, #4895ef);
+  color: var(--white);
+  padding: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.stu-hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(76, 201, 240, 0.9);
+}
+
+.stu-hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+}
+
+.stu-hero-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stu-hero-content p {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  opacity: 0.9;
+}
+
+.stu-features {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+}
+
+.stu-feature {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.stu-feature span {
+  font-size: 1.5rem;
+}
+
+.stu-feature p {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.stu-form-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: var(--white);
+}
+
+.stu-form-wrapper {
+  width: 100%;
+  max-width: 450px;
+}
+
+.stu-form-wrapper h2 {
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  color: #4895ef;
+}
+
+.stu-form-subtitle {
+  color: var(--text-light);
+  margin-bottom: 2rem;
+}
+
+.stu-switch-link {
+  color: #4895ef;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.stu-switch-link:hover {
+  text-decoration: underline;
+}
+
+.stu-social-auth {
+  margin: 1.5rem 0;
+}
+
+.stu-google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  font-weight: 600;
+  color: var(--text-color);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.stu-google-btn:hover {
+  border-color: #4895ef;
+  box-shadow: 0 8px 20px rgba(72, 149, 239, 0.15);
+  transform: translateY(-1px);
+}
+
+.stu-divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  color: var(--text-light);
+  font-size: 0.875rem;
+}
+
+.stu-divider::before,
+.stu-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border);
+}
+
+.stu-divider::before {
+  margin-right: 1rem;
+}
+
+.stu-divider::after {
+  margin-left: 1rem;
+}
+
+.stu-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.stu-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stu-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.stu-input {
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  transition: all 0.2s;
+}
+
+.stu-input:focus {
+  outline: none;
+  border-color: #4895ef;
+  box-shadow: 0 0 0 3px rgba(72, 149, 239, 0.1);
+}
+
+.stu-input-error {
+  border-color: var(--error);
+}
+
+.stu-input-error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 35, 60, 0.1);
+}
+
+.stu-error {
+  color: var(--error);
+  font-size: 0.75rem;
+}
+
+.stu-password-strength {
+  height: 4px;
+  background-color: var(--border);
+  border-radius: 2px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.stu-strength-meter {
+  height: 100%;
+  background-color: #4cc9f0;
+  transition: width 0.3s;
+}
+
+.stu-hint {
+  color: var(--text-light);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.stu-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stu-remember {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stu-checkbox {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #4895ef;
+}
+
+.stu-remember-label {
+  font-size: 0.875rem;
+  color: var(--text-color);
+}
+
+.stu-forgot-btn {
+  background: none;
+  border: none;
+  color: #4895ef;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
+.stu-forgot-btn:hover {
+  text-decoration: underline;
+}
+
+.stu-primary-btn {
+  background-color: #4895ef;
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  padding: 0.875rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 0.5rem;
+}
+
+.stu-primary-btn:hover {
+  background-color: #3a7bc8;
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+  .stu-auth-container {
+    flex-direction: column;
+  }
+
+  .stu-hero-section {
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .stu-hero-content {
+    max-width: 100%;
+  }
+
+  .stu-features {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .stu-feature {
+    flex: 1;
+    min-width: 200px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .stu-hero-section {
+    padding: 1.5rem;
+  }
+
+  .stu-hero-content h1 {
+    font-size: 2rem;
+  }
+
+  .stu-feature {
+    min-width: 100%;
+  }
+}
+
+
+
+/* OTP Verification */
+.emp-otp-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.emp-otp-inputs {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.emp-otp-input {
+  width: 3.5rem;
+  height: 3.5rem;
+  text-align: center;
+  font-size: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.emp-otp-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.emp-otp-resend {
+  color: var(--text-light);
+  font-size: 0.875rem;
+}
+
+.emp-resend-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+
+.emp-resend-btn:disabled {
+  color: var(--text-light);
+  cursor: not-allowed;
+}
+
+.emp-resend-btn:hover:not(:disabled) {
+  text-decoration: underline;
+}

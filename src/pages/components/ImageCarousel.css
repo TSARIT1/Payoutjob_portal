@@ -1,0 +1,58 @@
+.cs-carousel-wrapper {
+  width: 100%;
+  max-width: 80rem; /* max-w-2xl */
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+}
+
+.cs-next-arrow,
+.cs-prev-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background-color: #e5e7eb; /* bg-gray-200 */
+  padding: 0.5rem;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+  border: none;
+}
+
+.cs-next-arrow:hover,
+.cs-prev-arrow:hover {
+  background-color: #d1d5db; /* hover:bg-gray-300 */
+}
+
+.cs-next-arrow {
+  right: -1.5rem; /* -right-6 */
+}
+
+.cs-prev-arrow {
+  left: -1.5rem; /* -left-6 */
+}
+
+.cs-image-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  justify-items: center;
+  align-items: center;
+}
+
+.cs-image-wrapper {
+  width: 40%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cs-image {
+  height: 5rem; /* h-20 */
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.cs-image:hover {
+  transform: scale(1.05);
+}
