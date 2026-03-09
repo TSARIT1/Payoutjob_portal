@@ -3,9 +3,9 @@ import { FcGoogle } from 'react-icons/fc';
 import './AuthStyles.css';
 import Navbar from '../../pages/components/Navbar';
 import OtpVerification from './OtpVerification';
-import { Link, useNavigate} from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Footer from '../../pages/components/Footer';
-
+import { registerStudent } from "../../services/api";   // fixed import
 
 
 const StudentRegister = () => {
@@ -76,10 +76,35 @@ const StudentRegister = () => {
     return (strength / 4) * 100;
   };
 
-  const handleSubmit = (e) => {
+  // 🔹 Updated submit to connect backend
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (validateForm()) {
-      setShowOtpVerification(true);
+
+      try {
+
+        const response = await registerStudent({
+          fullName: formData.fullName,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone,
+          university: formData.university
+        });
+
+        console.log("Registration success:", response.data);
+
+        setShowOtpVerification(true);
+
+      } catch (error) {
+
+        console.error("Registration failed:", error);
+
+        setErrors({
+          general: "Registration failed. Try again."
+        });
+
+      }
     }
   };
 
