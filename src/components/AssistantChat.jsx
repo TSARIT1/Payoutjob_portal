@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Bot, MessageCircle, X, User, Briefcase, GraduationCap } from 'lucide-react';
 
+const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:3001';
+
 export default function AssistantChat({ userType = 'jobseeker' }) {
   const [open, setOpen] = useState(false);
   const [persona, setPersona] = useState(userType);
@@ -31,7 +33,7 @@ export default function AssistantChat({ userType = 'jobseeker' }) {
     setMessages(prev => [...prev, { role: 'user', content: text }]);
     setLoading(true);
     try {
-      const resp = await fetch('http://localhost:3001/ai/chat', {
+      const resp = await fetch(`${AI_SERVER_URL}/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, userType: persona })

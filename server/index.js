@@ -16,6 +16,7 @@ const SRC_DIR = path.join(WORKSPACE_ROOT, 'src');
 
 const openaiApiKey = process.env.OPENAI_API_KEY || '';
 const openai = openaiApiKey ? new OpenAI({ apiKey: openaiApiKey }) : null;
+const openaiModel = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 
 function listFiles(dir, exts) {
   const results = [];
@@ -135,7 +136,7 @@ app.post('/ai/chat', async (req, res) => {
     ];
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: openaiModel,
       temperature: 0.2,
       messages
     });
