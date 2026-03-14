@@ -34,6 +34,7 @@ export default function AssistantPopup({ visible, job, onClose, onSubmit }) {
   const [animate, setAnimate] = useState(true);
   const advanceTimer = useRef(null);
   const [showFinalPrompt, setShowFinalPrompt] = useState(false);
+  const containerRef = useRef(null);
   const FINAL_AFTER = 5; // show final message after this many answers
 
   // Build question list (add more questions here)
@@ -75,7 +76,6 @@ export default function AssistantPopup({ visible, job, onClose, onSubmit }) {
 
   const total = questions.length;
   const step = questions[currentStep];
-  const containerRef = useRef(null);
 
   const updateAnswer = (key, value, options = { immediate: false }) => {
     setAnswers(prev => ({ ...prev, [key]: value }));
@@ -176,7 +176,7 @@ export default function AssistantPopup({ visible, job, onClose, onSubmit }) {
       <div ref={containerRef} style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ fontSize: 13, color: '#666', marginBottom: 8 }}>Application assistant</div>
 
-        {questions.slice(0, currentStep).map((q, idx) => (
+        {questions.slice(0, currentStep).map((q) => (
           <div key={q.key} style={{ padding: 12, borderRadius: 10, background: '#fbfafc', border: '1px solid #eef2f6' }}>
             <div style={{ fontSize: 13, color: '#374151', fontWeight: 600 }}>{q.label}</div>
             <div style={{ marginTop: 8, color: '#0f172a' }}>{String(answers[q.key] ?? '') || <span style={{ color: '#94a3b8' }}>No answer</span>}</div>

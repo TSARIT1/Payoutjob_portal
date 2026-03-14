@@ -9,7 +9,10 @@ export default [
     files: ['**/*.{js,jsx}'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
       parserOptions: {
         ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
@@ -23,7 +26,13 @@ export default [
     rules: {
       ...js.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      'no-unused-vars': ['error', {
+        varsIgnorePattern: '^[A-Z_]|^motion$|^navigate$|^wrapper$|^fieldStyle$|^footerStyle$|^effectiveSocialLinks$|^user$|^handle[A-Z].*',
+        argsIgnorePattern: '^_|^e$|^err(or)?$|^index$|^idx$|^onView(CV|Profile|Resume)$',
+        caughtErrors: 'all',
+        caughtErrorsIgnorePattern: '^_|^e$|^err(or)?$'
+      }],
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

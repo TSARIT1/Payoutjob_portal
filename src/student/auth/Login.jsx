@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FcGoogle } from 'react-icons/fc';
 import './AuthStyles.css';
 import Navbar from '../../pages/components/Navbar';

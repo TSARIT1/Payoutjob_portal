@@ -41,7 +41,7 @@ export default function AssistantChat({ userType = 'jobseeker' }) {
       const data = await resp.json();
       const reply = data.reply || data.error || 'No response.';
       setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
-    } catch (err) {
+    } catch (_err) {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Unable to reach AI server. Make sure it is running.' }]);
     } finally {
       setLoading(false);

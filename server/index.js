@@ -17,6 +17,7 @@ const SRC_DIR = path.join(WORKSPACE_ROOT, 'src');
 const openaiApiKey = process.env.OPENAI_API_KEY || '';
 const openai = openaiApiKey ? new OpenAI({ apiKey: openaiApiKey }) : null;
 const openaiModel = process.env.OPENAI_MODEL || 'gpt-4o-mini';
+const maxContextDocs = Number(process.env.AI_MAX_CONTEXT_DOCS || 4);
 
 function listFiles(dir, exts) {
   const results = [];
@@ -51,33 +52,89 @@ function loadKnowledgeBase() {
 
 const KNOWLEDGE_BASE = loadKnowledgeBase();
 
+const STOP_WORDS = new Set([
+  'the', 'and', 'for', 'with', 'that', 'this', 'from', 'your', 'you', 'how',
+  'what', 'when', 'where', 'into', 'have', 'has', 'are', 'can', 'about',
+  'use', 'using', 'will', 'does', 'dont', 'not', 'just', 'job', 'jobs'
+]);
+
 function tokenize(text) {
-  return text.toLowerCase().match(/[a-zA-Z][a-zA-Z0-9_-]+/g) || [];
+  const raw = String(text || '').toLowerCase().match(/[a-zA-Z][a-zA-Z0-9_-]+/g) || [];
+  return raw.filter((t) => t.length > 2 && !STOP_WORDS.has(t));
 }
 
-function scoreDocument(queryTokens, doc) {
-  const docTokens = tokenize(doc.content);
-  if (!docTokens.length) return 0;
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function scoreDocument(queryTokens, rawQuery, doc) {
+  if (!queryTokens.length) return 0;
+
+  const fileName = String(doc.file || '').toLowerCase();
+  const text = String(doc.content || '').toLowerCase();
+
   let score = 0;
-  const set = new Set(docTokens);
+  let matched = 0;
+
   for (const t of queryTokens) {
-    if (set.has(t)) score += 1;
+    const re = new RegExp(`\\b${escapeRegExp(t)}\\b`, 'g');
+    const hitCount = (text.match(re) || []).length;
+    if (hitCount > 0) {
+      matched += 1;
+      score += Math.min(hitCount, 5) * 2;
+    }
+    if (fileName.includes(t)) {
+      score += 3;
+    }
   }
+
+  if (rawQuery && text.includes(rawQuery.toLowerCase())) {
+    score += 8;
+  }
+
+  const coverage = matched / queryTokens.length;
+  score *= (1 + coverage);
+
   return score;
 }
 
 function extractSnippets(queryTokens, content, maxChars = 1200) {
   const lines = content.split(/\r?\n/);
-  const hits = [];
+  const hitIndexes = [];
+
   for (let i = 0; i < lines.length; i++) {
     const l = lines[i].toLowerCase();
     if (queryTokens.some(t => l.includes(t))) {
-      const start = Math.max(0, i - 2);
-      const end = Math.min(lines.length, i + 3);
-      hits.push(lines.slice(start, end).join('\n'));
+      hitIndexes.push(i);
     }
   }
-  const text = hits.join('\n---\n');
+
+  if (!hitIndexes.length) {
+    return lines.slice(0, Math.min(lines.length, 20)).join('\n').slice(0, maxChars);
+  }
+
+  // Build merged windows around matched lines to avoid duplicated context.
+  const windows = [];
+  for (const idx of hitIndexes) {
+    const start = Math.max(0, idx - 2);
+    const end = Math.min(lines.length - 1, idx + 2);
+    const last = windows[windows.length - 1];
+    if (last && start <= last.end + 1) {
+      last.end = Math.max(last.end, end);
+    } else {
+      windows.push({ start, end });
+    }
+  }
+
+  const blocks = windows.slice(0, 8).map((w) => {
+    const block = [];
+    for (let i = w.start; i <= w.end; i++) {
+      block.push(`${i + 1}: ${lines[i]}`);
+    }
+    return block.join('\n');
+  });
+
+  const text = blocks.join('\n---\n');
   return text.slice(0, maxChars);
 }
 
@@ -90,10 +147,10 @@ app.post('/ai/chat', async (req, res) => {
 
   const queryTokens = tokenize(query);
   const ranked = KNOWLEDGE_BASE
-    .map(doc => ({ doc, score: scoreDocument(queryTokens, doc) }))
+    .map(doc => ({ doc, score: scoreDocument(queryTokens, query, doc) }))
     .filter(x => x.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 6);
+    .slice(0, Math.max(1, maxContextDocs));
 
   const contextPieces = ranked.map(({ doc }) => {
     const snippet = extractSnippets(queryTokens, doc.content);
