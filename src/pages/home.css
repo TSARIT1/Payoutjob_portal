@@ -37,8 +37,9 @@
   background: transparent;
   width: 100%;
 }
-.sr-input:focus .group {
-  border: 1px solid red;
+.group:focus-within {
+  background: rgba(219, 234, 254, 0.45);
+  border-radius: 12px;
 }
 .icon {
   font-size: 20px;
@@ -54,10 +55,6 @@
 .box-btns {
   transform: none;
 }
-.st-companies {
-  width: 100%;
-  padding: 16px 0 30px;
-}
 .container-images-c {
   height: auto;
   padding: 0 140px;
@@ -71,10 +68,78 @@
 .heading {
   margin-bottom: 18px;
 }
+.section-copy {
+  max-width: 760px;
+  margin: 0 auto 18px;
+  text-align: center;
+}
+
+.section-copy h2 {
+  font-size: clamp(1.8rem, 2.5vw, 2.4rem);
+  color: #0f172a;
+}
+
+.section-copy p:last-child {
+  margin-top: 8px;
+  line-height: 1.65;
+  color: #475569;
+}
+
+.section-eyebrow {
+  margin-bottom: 8px;
+  color: #1d4ed8;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.company-showcase {
+  margin-top: 8px;
+  margin-bottom: 30px;
+}
+
+.company-copy {
+  margin-bottom: 14px;
+}
+
+.company-section-card {
+  background: linear-gradient(180deg, #ffffff, #eff6ff);
+  border: 1px solid #dbeafe;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 18px 34px rgba(30, 64, 175, 0.1);
+}
+
+.company-notes {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.company-notes span {
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e3a8a;
+  font-weight: 700;
+  font-size: 0.84rem;
+}
+
 .p-category {
   padding: 10px 40px 18px;
   margin: 18px 0;
 }
+
+.category-shell {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .pc-main {
   display: flex;
   flex-wrap: wrap;
@@ -95,12 +160,13 @@
   gap: 10px;
   margin: 10px 10px;
   border: 1px solid #1d4ed8;
-  width: 100%;
   width: 220px;
   font-size: 17px;
   border-radius: 10px;
   transition: all 0.3s ease;
   background: #ffffff;
+  padding-right: 10px;
+  box-shadow: 0 8px 18px rgba(30, 64, 175, 0.08);
 }
 .items-ct:hover {
   background: linear-gradient(135deg, rgba(0, 71, 158, 0.1), rgba(0, 71, 158, 0.05));
@@ -191,6 +257,11 @@
   border-radius: 12px;
   font-weight: 700;
   font-size: 0.94rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.hero-btn:hover {
+  transform: translateY(-1px);
 }
 
 .hero-btn.primary {
@@ -260,6 +331,12 @@
   border-radius: 14px;
   padding: 18px;
   box-shadow: 0 10px 20px rgba(30, 64, 175, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px rgba(30, 64, 175, 0.14);
 }
 
 .benefit-card svg {
@@ -291,6 +368,10 @@
   .top-benefits {
     grid-template-columns: 1fr;
     margin-top: -12px;
+  }
+
+  .company-section-card {
+    padding: 16px;
   }
 }
 
@@ -331,6 +412,10 @@
 
   .buttton-search {
     width: 100%;
+  }
+
+  .company-notes {
+    justify-content: flex-start;
   }
 }
 
@@ -451,6 +536,12 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.faq-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
 .faq-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -459,7 +550,7 @@
 
 .faq-section-title {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 12px;
   font-size: 2rem;
   color: #2c3e50;
 }
@@ -467,6 +558,10 @@
 .faq-container {
   max-width: 800px;
   margin: 0 auto;
+}
+
+.faq-copy {
+  margin-bottom: 24px;
 }
 
 .faq-item {
@@ -510,6 +605,12 @@
   border-radius: 14px;
   padding: 16px;
   box-shadow: 0 10px 20px rgba(30, 64, 175, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.workflow-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px rgba(30, 64, 175, 0.14);
 }
 
 .workflow-index {
@@ -558,6 +659,12 @@
   border-radius: 14px;
   padding: 16px;
   box-shadow: 0 10px 22px rgba(30, 64, 175, 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.app-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px rgba(30, 64, 175, 0.16);
 }
 
 .app-icon {
@@ -591,6 +698,14 @@
 @media (max-width: 680px) {
   .p-category {
     padding: 10px 18px;
+  }
+
+  .section-copy h2,
+  .workflow-head h2,
+  .app-support-head h2,
+  .faq-section-title,
+  .fvc-heading {
+    font-size: 1.55rem;
   }
 
   .workflow-grid,

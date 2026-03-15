@@ -309,14 +309,32 @@ const popular = [
         </article>
       </section>
 
-      <div className="st-companies container">
-        <h1 className="text-center text-2xl font-medium heading">Top MNC Companies Hiring Here</h1>
-        <ImageCarousel images={servicesCompanyLogos} />
-      </div>
+      <section className="company-showcase container">
+        <div className="section-copy company-copy">
+          <p className="section-eyebrow">Trusted Hiring Network</p>
+          <h2>Top MNC companies and fast-growing brands</h2>
+          <p>
+            Explore opportunities from recognized employers with a cleaner logo wall, stronger visibility,
+            and a hiring experience that feels credible from the first screen.
+          </p>
+        </div>
+        <div className="company-section-card">
+          <ImageCarousel images={servicesCompanyLogos} />
+        </div>
+        <div className="company-notes">
+          <span>Free employer onboarding</span>
+          <span>Professional job seeker experience</span>
+          <span>Reliable AI-assisted workflow</span>
+        </div>
+      </section>
     </div>
 
-      <div className="p-category">
-        <h1 className="text-center text-2xl font-medium heading">Popular Categories</h1>
+      <section className="p-category category-shell">
+        <div className="section-copy">
+          <p className="section-eyebrow">Popular Paths</p>
+          <h2 className="text-center text-2xl font-medium heading">Popular Categories</h2>
+          <p>Browse high-intent categories that help job seekers and employers move faster.</p>
+        </div>
         <div className="pc-main">
       {
         popular.map((pop,index) => (
@@ -330,7 +348,7 @@ const popular = [
         ))
       }
         </div>
-      </div>
+      </section>
 
       <section className="workflow container">
         <div className="workflow-head">
@@ -399,8 +417,13 @@ const popular = [
 
 
       <section className="faq-section">
+      <div className="faq-shell">
+        <div className="section-copy faq-copy">
+          <p className="section-eyebrow">Need Answers Fast</p>
+          <h2 className="faq-section-title">Frequently Asked Questions</h2>
+          <p>Clear guidance for job seekers and employers using the portal for free.</p>
+        </div>
       <div className="faq-container">
-        <h2 className="faq-section-title">Frequently Asked Questions</h2>
         <div className="faq-container">
           {faqs.map((faq, index) => (
             <div 
@@ -418,6 +441,7 @@ const popular = [
             </div>
           ))}
         </div>
+      </div>
       </div>
     </section>
       <Footer />
