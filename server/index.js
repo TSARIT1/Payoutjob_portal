@@ -138,6 +138,71 @@ function extractSnippets(queryTokens, content, maxChars = 1200) {
   return text.slice(0, maxChars);
 }
 
+function formatAssistantReply(text) {
+  const raw = String(text || '').replace(/\r/g, '').trim();
+  if (!raw) return 'No response generated.';
+
+  const lines = raw
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  const structured = lines.some((l) => /^([0-9]+\.|[-*])\s+/.test(l));
+  const capped = lines.slice(0, 8).join('\n').slice(0, 1200);
+  if (structured) return capped;
+
+  const sentences = raw
+    .split(/(?<=[.!?])\s+/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, 4);
+
+  if (!sentences.length) return raw.slice(0, 800);
+
+  return [
+    sentences[0],
+    ...sentences.slice(1).map((s, i) => `${i + 1}. ${s}`)
+  ].join('\n').slice(0, 1200);
+}
+
+function buildLocalFallbackReply(query, userType, rankedDocs) {
+  const q = String(query || '').toLowerCase();
+  const persona = String(userType || '').toLowerCase();
+  const files = rankedDocs.slice(0, 3).map(({ doc }) => doc.file);
+
+  let steps;
+  if (persona === 'recruiter' && q.includes('post') && q.includes('job')) {
+    steps = [
+      'Open the recruiter dashboard and go to the Jobs section.',
+      'Click Add Job, then fill title, department, location, type, and salary.',
+      'Review the form and submit to publish the opening.'
+    ];
+  } else if (q.includes('search') && q.includes('job')) {
+    steps = [
+      'Use the search bar for keywords like role, skills, or company.',
+      'Apply filters for location, experience, and work mode.',
+      'Sort by relevance or newest and open a role card to apply.'
+    ];
+  } else {
+    steps = [
+      'Open the related dashboard page for your role.',
+      'Use filters or action buttons visible in that page.',
+      'If you share your exact goal, I can give precise click-by-click steps.'
+    ];
+  }
+
+  const lines = [
+    'Using local project context (API key not configured).',
+    ...steps.map((s, i) => `${i + 1}. ${s}`)
+  ];
+
+  if (files.length) {
+    lines.push(`Relevant files: ${files.join(', ')}`);
+  }
+
+  return lines.join('\n');
+}
+
 app.post('/ai/chat', async (req, res) => {
   const { message, userType } = req.body || {};
   const query = String(message || '').trim();
@@ -167,7 +232,7 @@ app.post('/ai/chat', async (req, res) => {
 
   const responsibilitiesBlock = `Responsibilities:\n- Guide users step-by-step.\n- Explain features clearly.\n- Resolve confusion with practical tips.\n- Adapt guidance for jobseeker vs recruiter vs student.\n- Be accurate to actual features; call out assumptions.\n- Keep answers concise and actionable (Steps, Examples, Tips).`;
 
-  const styleBlock = `Style Rules:\n- Friendly expert; simple language.\n- No backend secrets; no hallucinations.\n- Minimal jargon unless requested.\n- Provide steps and options where helpful.`;
+  const styleBlock = `Style Rules:\n- Friendly expert; simple language.\n- No backend secrets; no hallucinations.\n- Minimal jargon unless requested.\n- Keep responses concise: max 6 bullet points or steps.\n- Prefer action-oriented numbered steps when giving guidance.`;
 
   const persona = String(userType || '').toLowerCase();
   const personaBlock = persona === 'recruiter'
@@ -179,9 +244,7 @@ app.post('/ai/chat', async (req, res) => {
   const systemPrompt = [roleBlock, knowledgeBlock, responsibilitiesBlock, styleBlock, personaBlock].join('\n\n');
 
   if (!openai) {
-    const fallback = `AI key missing. Using local context only.\n\n${contextHeader}\n\n` +
-      `Question: ${query}\n\n` +
-      `Summary: This is a React + Vite job portal. Review the provided context files and respond with a helpful, concise answer. If the context is insufficient, say what is known and what to check next.`;
+    const fallback = buildLocalFallbackReply(query, userType, ranked);
     return res.json({ reply: fallback });
   }
 
@@ -198,7 +261,8 @@ app.post('/ai/chat', async (req, res) => {
       messages
     });
 
-    const reply = completion.choices?.[0]?.message?.content || 'No response generated.';
+    const replyRaw = completion.choices?.[0]?.message?.content || 'No response generated.';
+    const reply = formatAssistantReply(replyRaw);
     return res.json({ reply });
   } catch (err) {
     const msg = typeof err?.message === 'string' ? err.message : 'OpenAI error';

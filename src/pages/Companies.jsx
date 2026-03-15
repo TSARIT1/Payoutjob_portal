@@ -335,7 +335,7 @@ const Companies = () => {
 		}
 
 		return base;
-	}, [companies, searchTerm, selectedCategory, categories]);
+	}, [companies, searchTerm, selectedCategory, categories, categoryCatalogs]);
 	
 
 	return (

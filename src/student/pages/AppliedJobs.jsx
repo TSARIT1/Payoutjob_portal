@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { FiMapPin, FiDollarSign, FiCalendar, FiBriefcase, FiClock, FiCheckCircle, FiXCircle, FiEye } from 'react-icons/fi';
 import Navbar from '../../pages/components/Navbar';
@@ -13,7 +13,7 @@ const AppliedJobs = () => {
   const [expandedJobId, setExpandedJobId] = useState(null);
 
   // Mock job data - in a real app, this would come from an API
-  const allJobs = [
+  const allJobs = useMemo(() => [
     {
       id: 1,
       title: "UI / UX Designer",
@@ -84,7 +84,7 @@ const AppliedJobs = () => {
       description: "Develop innovative mobile applications for iOS and Android...",
       logo: "https://via.placeholder.com/60x60/FF9800/ffffff?text=AW"
     }
-  ];
+  ], []);
 
   useEffect(() => {
     // Simulate API call to fetch applied jobs
@@ -99,7 +99,7 @@ const AppliedJobs = () => {
     };
 
     fetchAppliedJobs();
-  }, []);
+  }, [allJobs]);
 
   const getStatusColor = (status) => {
     switch (status) {

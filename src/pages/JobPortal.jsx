@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Search, MapPin, Briefcase, DollarSign, Heart, Share2, Square, Moon, X, ChevronDown, User, Save, Calendar, CheckCircle, ArrowLeft, Filter, ChevronUp
 } from 'lucide-react';
@@ -834,7 +834,7 @@ const JobPortal = () => {
   });
 
   // Compute simple relevance score for keyword/location matches
-  const getRelevanceScore = (job) => {
+  const getRelevanceScore = useCallback((job) => {
     let score = 0;
     const keyword = (appliedFilters.keywords || '').trim().toLowerCase();
     if (keyword) {
@@ -850,7 +850,7 @@ const JobPortal = () => {
       }
     }
     return score;
-  };
+  }, [appliedFilters.keywords, appliedFilters.locations]);
 
   // Sort jobs according to selected sort option
   
@@ -874,7 +874,7 @@ const JobPortal = () => {
       default:
         return jobs;
     }
-  }, [filteredJobs, sortBy, appliedFilters]);
+  }, [filteredJobs, sortBy, getRelevanceScore]);
 
   return (
     <>
