@@ -99,18 +99,18 @@ const Index = () => {
 const [activeCategory, setActiveCategory] = useState('Skills');
 
   const servicesCompanyLogos = useMemo(() => ([
-    { name: 'Microsoft', short: 'MS', theme: 'blue', label: 'Global cloud and enterprise hiring' },
-    { name: 'Google', short: 'G', theme: 'amber', label: 'Product, data, and AI roles' },
-    { name: 'Amazon', short: 'AM', theme: 'orange', label: 'Operations and engineering teams' },
-    { name: 'Meta', short: 'ME', theme: 'sky', label: 'Platform and growth opportunities' },
-    { name: 'Oracle', short: 'OR', theme: 'red', label: 'Enterprise technology positions' },
-    { name: 'IBM', short: 'IBM', theme: 'indigo', label: 'Consulting and infrastructure hiring' },
-    { name: 'Accenture', short: 'AC', theme: 'violet', label: 'Consulting and transformation roles' },
-    { name: 'Infosys', short: 'IN', theme: 'cyan', label: 'Delivery and digital engineering' },
-    { name: 'TCS', short: 'TCS', theme: 'teal', label: 'Large-scale enterprise projects' },
-    { name: 'Wipro', short: 'WI', theme: 'pink', label: 'Technology and support openings' },
-    { name: 'Salesforce', short: 'SF', theme: 'blue', label: 'CRM and cloud platform careers' },
-    { name: 'Adobe', short: 'AD', theme: 'rose', label: 'Creative and product innovation' }
+    { name: 'Microsoft', short: 'MS', theme: 'blue',   label: 'Global cloud and enterprise hiring',    logo: 'https://logo.clearbit.com/microsoft.com',   openRoles: 1240 },
+    { name: 'Google',    short: 'G',   theme: 'amber',  label: 'Product, data, and AI roles',            logo: 'https://logo.clearbit.com/google.com',      openRoles: 860  },
+    { name: 'Amazon',    short: 'AM',  theme: 'orange', label: 'Operations and engineering teams',        logo: 'https://logo.clearbit.com/amazon.com',      openRoles: 2100 },
+    { name: 'Meta',      short: 'ME',  theme: 'sky',    label: 'Platform and growth opportunities',      logo: 'https://logo.clearbit.com/meta.com',        openRoles: 470  },
+    { name: 'Oracle',    short: 'OR',  theme: 'red',    label: 'Enterprise technology positions',         logo: 'https://logo.clearbit.com/oracle.com',      openRoles: 390  },
+    { name: 'IBM',       short: 'IBM', theme: 'indigo', label: 'Consulting and infrastructure hiring',    logo: 'https://logo.clearbit.com/ibm.com',         openRoles: 620  },
+    { name: 'Accenture', short: 'AC',  theme: 'violet', label: 'Consulting and transformation roles',    logo: 'https://logo.clearbit.com/accenture.com',   openRoles: 1850 },
+    { name: 'Infosys',   short: 'IN',  theme: 'cyan',   label: 'Delivery and digital engineering',       logo: 'https://logo.clearbit.com/infosys.com',     openRoles: 940  },
+    { name: 'TCS',       short: 'TCS', theme: 'teal',   label: 'Large-scale enterprise projects',         logo: 'https://logo.clearbit.com/tcs.com',         openRoles: 1520 },
+    { name: 'Wipro',     short: 'WI',  theme: 'pink',   label: 'Technology and support openings',         logo: 'https://logo.clearbit.com/wipro.com',       openRoles: 680  },
+    { name: 'Salesforce',short: 'SF',  theme: 'blue',   label: 'CRM and cloud platform careers',         logo: 'https://logo.clearbit.com/salesforce.com',  openRoles: 430  },
+    { name: 'Adobe',     short: 'AD',  theme: 'rose',   label: 'Creative and product innovation',         logo: 'https://logo.clearbit.com/adobe.com',       openRoles: 290  }
   ]), []);
 
 
@@ -131,12 +131,12 @@ const popular = [
 ]
 
   const sectorSpotlights = [
-    { title: 'Healthcare & Life Sciences', text: 'Clinical, pharmacy, diagnostics, wellness, and hospital operations roles.' },
-    { title: 'Finance, Banking & Insurance', text: 'Banking operations, audit, finance, compliance, risk, and insurance careers.' },
-    { title: 'Retail, E-commerce & FMCG', text: 'Store operations, merchandising, supply chain, sales, and customer growth jobs.' },
-    { title: 'Manufacturing & Logistics', text: 'Plant operations, procurement, warehouse, transportation, and distribution roles.' },
-    { title: 'Education, Public Sector & Services', text: 'Teaching, administration, skilling, outreach, support, and governance jobs.' },
-    { title: 'Technology & Digital', text: 'Engineering, product, data, design, digital marketing, and analytics opportunities.' }
+    { title: 'Healthcare & Life Sciences',        text: 'Clinical, pharmacy, diagnostics, wellness, and hospital operations roles.',                      icon: <FaBriefcaseMedical /> },
+    { title: 'Finance, Banking & Insurance',       text: 'Banking operations, audit, finance, compliance, risk, and insurance careers.',                   icon: <FaFileInvoiceDollar /> },
+    { title: 'Retail, E-commerce & FMCG',          text: 'Store operations, merchandising, supply chain, sales, and customer growth jobs.',                 icon: <FaStore /> },
+    { title: 'Manufacturing & Logistics',           text: 'Plant operations, procurement, warehouse, transportation, and distribution roles.',               icon: <FaIndustry /> },
+    { title: 'Education, Public Sector & Services', text: 'Teaching, administration, skilling, outreach, support, and governance jobs.',                     icon: <FaUniversity /> },
+    { title: 'Technology & Digital',               text: 'Engineering, product, data, design, digital marketing, and analytics opportunities.',            icon: <FaLaptopCode /> }
   ];
 
   const globalReach = [
@@ -144,6 +144,30 @@ const popular = [
     'Supports onsite, hybrid, remote, freelance, contract, part-time, and full-time jobs',
     'Works for MNCs, startups, MSMEs, public sector teams, agencies, and enterprises',
     'Suitable for entry-level, experienced, leadership, skilled-trade, and specialist hiring'
+  ];
+
+  const testimonials = [
+    {
+      name: 'Priya Sharma',
+      role: 'Software Engineer',
+      company: 'TCS',
+      avatar: 'https://ui-avatars.com/api/?name=Priya+Sharma&background=1d4ed8&color=fff&size=80&bold=true&rounded=true',
+      quote: 'PayoutJob helped me land my dream role in just 3 weeks. The AI-powered CV enhancer made my resume stand out, and the employer communication tools are exceptional.'
+    },
+    {
+      name: 'Rahul Mehta',
+      role: 'HR Manager',
+      company: 'Accenture',
+      avatar: 'https://ui-avatars.com/api/?name=Rahul+Mehta&background=059669&color=fff&size=80&bold=true&rounded=true',
+      quote: 'As an employer, finding qualified candidates has never been easier. We posted a listing and received 50+ relevant applications within 48 hours. Absolutely recommend!'
+    },
+    {
+      name: 'Anita Reddy',
+      role: 'Registered Nurse',
+      company: 'Apollo Hospitals',
+      avatar: 'https://ui-avatars.com/api/?name=Anita+Reddy&background=7c3aed&color=fff&size=80&bold=true&rounded=true',
+      quote: 'Unlike other portals, PayoutJob is not just for IT. I found multiple healthcare opportunities near me — and the entire process was completely free for job seekers!'
+    }
   ];
 
   const appSupportCards = [
@@ -256,14 +280,23 @@ const popular = [
               <Link className="hero-btn secondary" to="/ai-tools">{t('home.exploreAi')}</Link>
             </div>
           </motion.div>
-          <motion.div className="hero-stat-card" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.08 }}>
-            <h3>{t('home.statsTitle')}</h3>
-            <div className="stat-list">
-              <div><strong>50K+</strong><span>{t('home.statCandidates')}</span></div>
-              <div><strong>2.5K+</strong><span>{t('home.statRoles')}</span></div>
-              <div><strong>900+</strong><span>{t('home.statCompanies')}</span></div>
+          <motion.div className="hero-visual-panel" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.08 }}>
+            <div className="hero-img-frame">
+              <img
+                src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=580&q=80&auto=format&fit=crop&crop=center"
+                alt="Diverse professionals collaborating using PayoutJob global hiring portal"
+                className="hero-img"
+                loading="eager"
+              />
+              <div className="hero-img-overlay">
+                <span className="hero-badge-pill"><FiCheckCircle /> 100K+ active job seekers</span>
+              </div>
             </div>
-            <p>{t('home.statsBody')}</p>
+            <div className="hero-stat-row">
+              <div><strong>100K+</strong><span>Active job seekers</span></div>
+              <div><strong>5K+</strong><span>Open roles</span></div>
+              <div><strong>2K+</strong><span>Hiring companies</span></div>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -341,6 +374,7 @@ const popular = [
         <div className="sector-grid">
           {sectorSpotlights.map((sector) => (
             <article className="sector-card" key={sector.title}>
+              <span className="sector-card-icon">{sector.icon}</span>
               <h3>{sector.title}</h3>
               <p>{sector.text}</p>
             </article>
@@ -498,6 +532,29 @@ const popular = [
       </div>
       </div>
     </section>
+
+      <section className="testimonials-section container">
+        <div className="section-copy">
+          <p className="section-eyebrow">Real Stories</p>
+          <h2>Trusted by job seekers and employers worldwide</h2>
+          <p>Thousands of professionals across every sector and country use PayoutJob to find the right opportunity or the right hire — for free.</p>
+        </div>
+        <div className="testimonials-grid">
+          {testimonials.map((tm) => (
+            <article className="testimonial-card" key={tm.name}>
+              <p className="testimonial-quote">&ldquo;{tm.quote}&rdquo;</p>
+              <div className="testimonial-author">
+                <img src={tm.avatar} alt={tm.name} className="testimonial-avatar" loading="lazy" width="46" height="46" />
+                <div>
+                  <strong>{tm.name}</strong>
+                  <span>{tm.role} &middot; {tm.company}</span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <Footer />
     </>
   );

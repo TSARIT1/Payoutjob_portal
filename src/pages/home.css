@@ -864,3 +864,191 @@
     padding: 0 20px 15px;
   }
 }
+
+/* ─────────────────────────────────────────────
+   Hero Visual Panel (replaces plain stat card)
+───────────────────────────────────────────── */
+
+.hero-visual-panel {
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+}
+
+.hero-img-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.45s ease;
+}
+
+.hero-visual-panel:hover .hero-img {
+  transform: scale(1.04);
+}
+
+.hero-img-overlay {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+}
+
+.hero-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 0.84rem;
+  padding: 7px 14px;
+  border-radius: 999px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.hero-badge-pill svg {
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.hero-stat-row {
+  display: flex;
+  justify-content: space-around;
+  padding: 16px 12px 14px;
+}
+
+.hero-stat-row div {
+  text-align: center;
+}
+
+.hero-stat-row strong {
+  display: block;
+  font-size: 1.22rem;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.hero-stat-row span {
+  font-size: 0.76rem;
+  color: rgba(219, 234, 254, 0.85);
+}
+
+/* ─────────────────────────────────────────────
+   Sector Card Icons
+───────────────────────────────────────────── */
+
+.sector-card-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  color: var(--accent-primary);
+  background: color-mix(in srgb, var(--accent-soft) 55%, white);
+  margin-bottom: 12px;
+}
+
+/* ─────────────────────────────────────────────
+   Testimonials Section
+───────────────────────────────────────────── */
+
+.testimonials-section {
+  margin: 28px auto 56px;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.testimonial-card {
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--accent-primary) 12%, white);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--accent-primary) 8%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 18px 34px color-mix(in srgb, var(--accent-primary) 14%, transparent);
+}
+
+.testimonial-quote {
+  color: #334155;
+  line-height: 1.7;
+  font-size: 0.97rem;
+  font-style: italic;
+  flex: 1;
+  margin: 0;
+}
+
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.testimonial-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.testimonial-author strong {
+  display: block;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.testimonial-author span {
+  font-size: 0.83rem;
+  color: #64748b;
+}
+
+@media (max-width: 980px) {
+  .testimonials-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-stat-row {
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .hero-stat-row div {
+    min-width: 80px;
+  }
+
+  .hero-img-frame {
+    aspect-ratio: 3 / 2;
+  }
+}

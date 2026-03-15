@@ -104,6 +104,41 @@
   background: linear-gradient(135deg, #e11d48, #fb7185);
 }
 
+/* Logo image variant — white background so real logos render cleanly */
+.cs-badge-logo {
+  background: #ffffff !important;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.cs-brand-logo-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  display: block;
+  border-radius: 4px;
+}
+
+/* Open roles floating badge */
+.cs-role-count {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(219, 234, 254, 0.9);
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  color: #1d4ed8;
+  font-size: 0.71rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+
 @media (max-width: 1080px) {
   .cs-logo-wall {
     grid-template-columns: repeat(3, minmax(0, 1fr));
