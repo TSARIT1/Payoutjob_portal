@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Bot, MessageCircle, X, User, Briefcase, GraduationCap } from 'lucide-react';
+import { Bot, MessageCircle, X, User, Briefcase } from 'lucide-react';
 
 const AI_SERVER_URL = import.meta.env.VITE_AI_SERVER_URL || 'http://localhost:3001';
 
@@ -21,9 +21,7 @@ export default function AssistantChat({ userType = 'jobseeker' }) {
 
   const suggestions = persona === 'recruiter'
     ? ['Post a job', 'Manage applications', 'Shortlist candidates', 'Close a job']
-    : persona === 'student'
-      ? ['Build my profile', 'Find internships', 'Improve resume', 'Skill tips']
-      : ['Search jobs', 'Apply to a job', 'Track applications', 'Fix upload issues'];
+    : ['Search jobs', 'Apply to a job', 'Track applications', 'Improve resume'];
 
   async function sendMessage(e) {
     e.preventDefault();
@@ -54,7 +52,6 @@ export default function AssistantChat({ userType = 'jobseeker' }) {
 
   function PersonaIcon() {
     if (persona === 'recruiter') return <Briefcase className="w-4 h-4" />;
-    if (persona === 'student') return <GraduationCap className="w-4 h-4" />;
     return <User className="w-4 h-4" />;
   }
 
@@ -96,9 +93,8 @@ export default function AssistantChat({ userType = 'jobseeker' }) {
                     onChange={(e) => setPersona(e.target.value)}
                     className="bg-transparent text-white outline-none"
                   >
-                    <option value="jobseeker">Jobseeker</option>
+                    <option value="jobseeker">Job Seeker</option>
                     <option value="recruiter">Recruiter</option>
-                    <option value="student">Student</option>
                   </select>
                 </div>
                 <button className="p-1 hover:bg-white/20 rounded" onClick={() => setOpen(false)} aria-label="Close">

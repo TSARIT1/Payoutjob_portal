@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { IoIosSearch } from "react-icons/io";
 import { IoLocationOutline } from "react-icons/io5";
 import { MdWorkOutline } from "react-icons/md";
@@ -54,15 +54,15 @@ const Index = () => {
   const faqs = [
     {
       question: "How do I create an account on PayoutJob?",
-      answer: "Creating an account is simple! Click on the 'Register' button in the top right corner, fill in your details, and verify your email address. You'll be ready to start your job search in minutes."
+      answer: "Creating an account is simple. Click Register, complete your details, and verify your email to start applying as a job seeker in minutes."
     },
     {
       question: "Is PayoutJob free for job seekers?",
-      answer: "Yes, PayoutJob is completely free for job seekers. You can browse jobs, create a profile, and apply to positions without any charges."
+      answer: "Yes. PayoutJob is free for job seekers, and employers can start with free job posting tools to begin hiring quickly."
     },
     {
       question: "How can employers post jobs on PayoutJob?",
-      answer: "Employers can post jobs by signing up for an employer account. After verification, you can post job listings through your dashboard. We offer various posting packages to suit your hiring needs."
+      answer: "Employers can post jobs by creating an employer account. After verification, you can publish openings from your dashboard and manage applicants in one workflow."
     },
     {
       question: "How do I reset my password?",
@@ -142,11 +142,79 @@ const popular = [
   ];
 
   const workflowSteps = [
-    { title: 'Create Free Profile', detail: 'Set up your seeker or employer profile in minutes and unlock dashboard workflows.' },
+    { title: 'Create Free Profile', detail: 'Set up your job seeker or employer profile in minutes and unlock dashboard workflows.' },
     { title: 'Discover MNC Jobs', detail: 'Search by skills, city, role, and category to discover relevant opportunities quickly.' },
     { title: 'Apply with AI Tools', detail: 'Use autofill, CV enhancement, and tailored recommendations for better application quality.' },
     { title: 'Track and Grow', detail: 'Monitor status updates, recruiter messages, and referral actions from one central portal.' }
   ];
+
+  useEffect(() => {
+    document.title = 'PayoutJob - Free Job Seeker & Employer Portal | AI Hiring Platform';
+
+    const ensureMeta = (name, content, attr = 'name') => {
+      let tag = document.head.querySelector(`meta[${attr}="${name}"]`);
+      if (!tag) {
+        tag = document.createElement('meta');
+        tag.setAttribute(attr, name);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute('content', content);
+    };
+
+    ensureMeta(
+      'description',
+      'PayoutJob is a free portal for job seekers and employers with AI resume tools, job posting workflows, MNC hiring access, and mobile-ready experience.'
+    );
+    ensureMeta(
+      'keywords',
+      'job portal, free job portal, free employer job posting, job seeker platform, AI hiring tools, MNC jobs, recruiter dashboard, resume enhancer'
+    );
+    ensureMeta('robots', 'index, follow, max-image-preview:large');
+    ensureMeta('og:title', 'PayoutJob - Free Job Seeker & Employer Portal', 'property');
+    ensureMeta(
+      'og:description',
+      'Discover MNC jobs, post jobs for free, and use AI-powered hiring and resume tools on PayoutJob.',
+      'property'
+    );
+    ensureMeta('og:type', 'website', 'property');
+    ensureMeta('og:url', window.location.href, 'property');
+    ensureMeta('twitter:card', 'summary_large_image');
+    ensureMeta('twitter:title', 'PayoutJob - Free Job Seeker & Employer Portal');
+    ensureMeta(
+      'twitter:description',
+      'Free job portal with AI workflows for job seekers and employers.'
+    );
+
+    let canonical = document.head.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', window.location.href);
+
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'PayoutJob',
+      url: window.location.origin,
+      description: 'Free job seeker and employer portal with AI-powered hiring workflow.',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: `${window.location.origin}/job?skills={search_term_string}`,
+        'query-input': 'required name=search_term_string'
+      }
+    };
+
+    let script = document.getElementById('payoutjob-seo-schema');
+    if (!script) {
+      script = document.createElement('script');
+      script.id = 'payoutjob-seo-schema';
+      script.type = 'application/ld+json';
+      document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(schema);
+  }, []);
 
   return (
     <>
@@ -155,7 +223,7 @@ const popular = [
       <section className="hero-section">
         <div className="container hero-grid">
           <motion.div className="hero-content" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
-            <p className="hero-kicker">Free Career Portal</p>
+            <p className="hero-kicker">Free For Job Seekers And Employers</p>
             <h1>Build a smarter hiring workflow with <span>PayoutJob</span></h1>
             <p>
               Beautiful and professional job discovery with AI-assisted tools, recruiter dashboards, and smooth mobile-ready workflows.
@@ -172,7 +240,7 @@ const popular = [
               <div><strong>2.5K+</strong><span>Open roles</span></div>
               <div><strong>900+</strong><span>Hiring companies</span></div>
             </div>
-            <p>Designed for both job seekers and employers with polished UI cards, clear actions, and reliable performance.</p>
+            <p>Designed for both job seekers and employers with polished UI cards, free onboarding, clear actions, and reliable performance.</p>
           </motion.div>
         </div>
       </section>
@@ -226,13 +294,13 @@ const popular = [
       <section className="top-benefits container">
         <article className="benefit-card">
           <FiCheckCircle />
-          <h3>Free Portal Access</h3>
+          <h3>Free for Job Seekers</h3>
           <p>Register and apply without subscription costs as a job seeker.</p>
         </article>
         <article className="benefit-card">
           <FiCheckCircle />
-          <h3>Professional Recruiter Tools</h3>
-          <p>Employer dashboard includes job posts, applicant tracking, and communication.</p>
+          <h3>Free for Employers to Start</h3>
+          <p>Employers can start posting jobs for free, then manage applicants and communication from one dashboard.</p>
         </article>
         <article className="benefit-card">
           <FiCheckCircle />

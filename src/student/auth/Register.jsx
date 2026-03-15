@@ -121,24 +121,24 @@ const StudentRegister = () => {
     <div className="stu-auth-container">
       <div className="stu-hero-section">
         <div className="stu-hero-content">
-          <h1>Start Your Learning Journey</h1>
+          <h1>Start Your Career Journey</h1>
           <p>
-            Join thousands of students who are advancing their careers through our 
-            platform. Create your account to access courses, resources, and career 
+            Join thousands of job seekers who are advancing their careers through our 
+            platform. Create your account to access opportunities, resources, and career 
             opportunities.
           </p>
           <div className="stu-features">
             <div className="stu-feature">
               <span>🎓</span>
-              <p>Access premium courses</p>
+              <p>Build your professional profile</p>
             </div>
             <div className="stu-feature">
               <span>📈</span>
-              <p>Track your learning progress</p>
+              <p>Track your application progress</p>
             </div>
             <div className="stu-feature">
               <span>🤝</span>
-              <p>Connect with mentors</p>
+              <p>Connect with recruiters</p>
             </div>
           </div>
         </div>
@@ -146,10 +146,10 @@ const StudentRegister = () => {
 
       <div className="stu-form-section">
         <div className="stu-form-wrapper">
-          <h2>Create your student account</h2>
+          <h2>Create your job seeker account</h2>
           <p className="stu-form-subtitle">
             Already have an account?{' '}
-            <Link to="/student/login" className="stu-switch-link">
+            <Link to="/login" className="stu-switch-link">
               Sign in
             </Link>
           </p>
@@ -190,7 +190,7 @@ const StudentRegister = () => {
 
               <div className="stu-form-group">
                 <label htmlFor="email" className="stu-label">
-                  Student Email
+                  Job Seeker Email
                 </label>
                 <input
                   type="email"
@@ -199,7 +199,7 @@ const StudentRegister = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className={`stu-input ${errors.email ? 'stu-input-error' : ''}`}
-                  placeholder="your@university.edu"
+                  placeholder="your@email.com"
                 />
                 {errors.email && (
                   <span className="stu-error">{errors.email}</span>

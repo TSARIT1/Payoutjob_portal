@@ -79,23 +79,23 @@ const StudentLogin = () => {
     <div className="stu-auth-container">
       <div className="stu-hero-section">
         <div className="stu-hero-content">
-          <h1>Welcome Back Students!</h1>
+          <h1>Welcome Back Job Seekers!</h1>
           <p>
-            Access your learning dashboard, track your progress, and discover new 
+            Access your job seeker dashboard, track your applications, and discover new 
             opportunities to advance your career.
           </p>
           <div className="stu-features">
             <div className="stu-feature">
               <span>📚</span>
-              <p>Access course materials</p>
+              <p>Access saved job matches</p>
             </div>
             <div className="stu-feature">
               <span>🎯</span>
-              <p>Track your learning progress</p>
+              <p>Track your application progress</p>
             </div>
             <div className="stu-feature">
               <span>💼</span>
-              <p>Find internship opportunities</p>
+              <p>Find career opportunities</p>
             </div>
           </div>
         </div>
@@ -140,7 +140,7 @@ const StudentLogin = () => {
             <form className="stu-form" onSubmit={handleSubmit}>
               <div className="stu-form-group">
                 <label htmlFor="email" className="stu-label">
-                  Student Email
+                  Job Seeker Email
                 </label>
                 <input
                   type="email"
@@ -149,7 +149,7 @@ const StudentLogin = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className={`stu-input ${errors.email ? 'stu-input-error' : ''}`}
-                  placeholder="your@university.edu"
+                  placeholder="your@email.com"
                 />
                 {errors.email && (
                   <span className="stu-error">{errors.email}</span>
