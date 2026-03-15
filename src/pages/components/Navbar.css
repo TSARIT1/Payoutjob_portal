@@ -784,12 +784,12 @@
   position: absolute;
   top: 100%;
   right: 0;
-  width: 280px;
+  width: 320px;
   background: white;
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
   border: 1px solid #e1e8ed;
-  z-index: 1001;
+  z-index: 10020;
   overflow: hidden;
 }
 
@@ -824,12 +824,26 @@
   margin: 0 0 4px 0;
   font-size: 16px;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-info p {
   margin: 0 0 4px 0;
   font-size: 14px;
   opacity: 0.9;
+}
+
+.profile-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.profile-email {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-role {
@@ -900,5 +914,12 @@
   .employer-btn {
     padding: 0.35rem 0.8rem;
     font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-dropdown {
+    width: min(92vw, 320px);
+    right: 8px;
   }
 }

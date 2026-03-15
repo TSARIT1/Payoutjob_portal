@@ -418,7 +418,7 @@ const Navbar = ({ mode = 'default' }) => {
                 </div>
                 <div className="profile-info">
                   <h4>{user?.name}</h4>
-                  <p>{user?.email}</p>
+                  <p className="profile-email" title={user?.email || ''}>{user?.email}</p>
                   <span className="profile-role">{user?.role}</span>
                 </div>
               </div>
