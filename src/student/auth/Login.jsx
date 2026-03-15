@@ -111,6 +111,10 @@ const StudentLogin = () => {
             </Link>
           </p>
 
+          <div className="stu-error" style={{ textAlign: 'left', marginBottom: '16px', background: '#f8fafc', color: '#1e293b', border: '1px solid #dbeafe' }}>
+            Demo login: student@payoutjob.com / Payout@123
+          </div>
+
           <div className="stu-social-auth">
             <button
               type="button"

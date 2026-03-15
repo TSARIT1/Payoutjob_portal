@@ -5,7 +5,8 @@ import Navbar from '../../pages/components/Navbar';
 import OtpVerification from './OtpVerification';
 import { Link, useNavigate } from 'react-router-dom';
 import Footer from '../../pages/components/Footer';
-import { registerStudent } from "../../services/api";   // fixed import
+import { registerStudent } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 
 const StudentRegister = () => {
@@ -18,7 +19,8 @@ const StudentRegister = () => {
     confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
-  const [showOtpVerification, setShowOtpVerification] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { applySession } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -81,29 +83,25 @@ const StudentRegister = () => {
     e.preventDefault();
 
     if (validateForm()) {
+      setIsLoading(true);
 
       try {
-
-        const response = await registerStudent({
+        const data = await registerStudent({
           fullName: formData.fullName,
           email: formData.email,
           password: formData.password,
           phone: formData.phone,
           university: formData.university
         });
-
-        console.log("Registration success:", response.data);
-
-        setShowOtpVerification(true);
+        applySession(data);
+        navigate('/profile/setup');
 
       } catch (error) {
-
-        console.error("Registration failed:", error);
-
         setErrors({
-          general: "Registration failed. Try again."
+          general: error?.response?.data?.error || 'Registration failed. Try again.'
         });
-
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -171,14 +169,7 @@ const StudentRegister = () => {
             <span>OR</span>
           </div>
 
-          {showOtpVerification ? (
-            <OtpVerification 
-              email={formData.email}
-              onComplete={() => navigate('/')}
-              cooldown={45}
-            />
-          ) : (
-            <form className="stu-form" onSubmit={handleSubmit}>
+          <form className="stu-form" onSubmit={handleSubmit}>
               <div className="stu-form-group">
                 <label htmlFor="fullName" className="stu-label">
                   Full Name
@@ -296,11 +287,16 @@ const StudentRegister = () => {
                 )}
               </div>
 
+              {errors.general && (
+                <div className="stu-error" style={{ textAlign: 'center', marginBottom: '15px' }}>
+                  {errors.general}
+                </div>
+              )}
+
               <button type="submit" className="stu-primary-btn">
-                Create Account
+                {isLoading ? 'Creating Account...' : 'Create Account'}
               </button>
             </form>
-          )}
         </div>
       </div>
     </div>

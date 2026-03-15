@@ -85,8 +85,8 @@ const ProfileSetup = () => {
           profileCompletion: 85
         };
 
-        updateProfile(profileData);
-        navigate('/');
+        await updateProfile(profileData);
+        navigate('/profile');
       } catch (error) {
         console.error('Profile setup failed:', error);
       } finally {

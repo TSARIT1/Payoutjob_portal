@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import './style.css';
 import Footer from '../../pages/components/Footer';
 import Navbar from '../../pages/components/Navbar';
+import { registerEmployer } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 const EmpRegister = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +15,8 @@ const EmpRegister = () => {
     confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const { applySession } = useAuth();
   
   const navigate = useNavigate();
 
@@ -75,10 +79,29 @@ const EmpRegister = () => {
     return '#059669';
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      navigate('/employer/welcome');
+      setIsLoading(true);
+      try {
+        const data = await registerEmployer({
+          fullName: formData.companyName,
+          companyName: formData.companyName,
+          email: formData.email,
+          password: formData.password,
+          phone: formData.phone,
+          location: 'Bangalore, India'
+        });
+        applySession(data);
+        navigate('/dashboard');
+      } catch (error) {
+        setErrors((prev) => ({
+          ...prev,
+          general: error?.response?.data?.error || 'Employer registration failed.'
+        }));
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -163,6 +186,12 @@ const EmpRegister = () => {
             </div>
 
               <form className="emp-form" onSubmit={handleSubmit}>
+                                {errors.general && (
+                                  <div className="emp-error emp-error-general">
+                                    {errors.general}
+                                  </div>
+                                )}
+
                 <div className="emp-form-group">
                   <label htmlFor="companyName" className="emp-label">
                     Company Name
@@ -303,8 +332,8 @@ const EmpRegister = () => {
                   )}
                 </div>
 
-                <button type="submit" className="emp-primary-btn">
-                  Create Account
+                <button type="submit" className="emp-primary-btn" disabled={isLoading}>
+                  {isLoading ? 'Creating Account...' : 'Create Account'}
                 </button>
               </form>
           </div>

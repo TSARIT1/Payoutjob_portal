@@ -127,6 +127,10 @@ const EmpLogin = () => {
               </Link>
             </p>
 
+            <div className="emp-error emp-error-general" style={{ background: '#f8fafc', color: '#1e293b', border: '1px solid #dbeafe' }}>
+              Demo login: employer@payoutjob.com / Payout@123
+            </div>
+
             <div className="emp-social-auth">
               <button className="emp-google-btn">
                 <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

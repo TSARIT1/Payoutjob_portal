@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './JobDashboard.css';
 import Jobs from './components/jobs';
 import ApplicationsTab from './components/Applications';
 import Candidates from './components/Candidates';
 import OverviewTab from './components/OverviewTab';
 import AssistantChat from '../components/AssistantChat';
+import { useAuth } from '../contexts/AuthContext';
+import {
+  createEmployerJob,
+  deleteEmployerJob,
+  fetchEmployerDashboard,
+  updateEmployerApplication,
+  updateEmployerJob
+} from '../services/api';
 
 const JobDashboard = () => {
+  const navigate = useNavigate();
+  const { logout, updateProfile: updateAuthProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [jobs, setJobs] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -72,6 +83,29 @@ const JobDashboard = () => {
   const [showProfileEditor, setShowProfileEditor] = useState(false);
   const [modalEditing, setModalEditing] = useState(false);
 
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const data = await fetchEmployerDashboard();
+        setJobs(data.jobs || []);
+        setApplications(data.applications || []);
+        setStats(data.stats || {
+          totalJobs: 0,
+          activeJobs: 0,
+          totalApplications: 0,
+          hiredCandidates: 0
+        });
+        if (data.profile) {
+          setEmployerProfile((prev) => ({ ...prev, ...data.profile }));
+        }
+      } catch (error) {
+        console.error('Failed to load dashboard:', error);
+      }
+    };
+
+    loadDashboard();
+  }, []);
+
   const openProfileEditor = (e) => {
     if (e && e.stopPropagation) e.stopPropagation();
     // debug log - remove if not needed
@@ -106,6 +140,16 @@ const JobDashboard = () => {
   const updateProfile = () => {
     try {
       localStorage.setItem('employerProfile', JSON.stringify(employerProfile));
+      updateAuthProfile({
+        ...employerProfile,
+        companyName: employerProfile.name,
+        name: employerProfile.name,
+        email: employerProfile.contactEmail || employerProfile.officialEmail,
+        phone: employerProfile.contactPhone || employerProfile.mobileNumber,
+        location: employerProfile.location,
+        profileCompleted: true,
+        profileCompletion: 92
+      });
       alert('Employer profile updated');
     } catch (e) {
       console.error('save failed', e);
@@ -453,29 +497,51 @@ const mockApplications = [
   };
 
   // Job Handlers
-  const handleAddJob = (newJob) => {
-    const job = {
-      ...newJob,
-      id: Date.now(),
-      applications: 0
-    };
-    setJobs(prev => [...prev, job]);
+  const handleAddJob = async (newJob) => {
+    try {
+      const data = await createEmployerJob(newJob);
+      setJobs(prev => [data.job, ...prev]);
+      setStats(prev => ({
+        ...prev,
+        totalJobs: prev.totalJobs + 1,
+        activeJobs: data.job.status === 'active' ? prev.activeJobs + 1 : prev.activeJobs
+      }));
+    } catch (error) {
+      console.error('Failed to create job:', error);
+      alert(error?.response?.data?.error || 'Failed to create job');
+    }
   };
 
-  const handleEditJob = (jobId, updatedData) => {
-    setJobs(prev => prev.map(job => 
-      job.id === jobId ? { ...job, ...updatedData } : job
-    ));
+  const handleEditJob = async (jobId, updatedData) => {
+    try {
+      const data = await updateEmployerJob(jobId, updatedData);
+      setJobs(prev => prev.map(job => job.id === jobId ? data.job : job));
+    } catch (error) {
+      console.error('Failed to update job:', error);
+      alert(error?.response?.data?.error || 'Failed to update job');
+    }
   };
 
-  const handleDeleteJob = (jobId) => {
-    setJobs(prev => prev.filter(job => job.id !== jobId));
+  const handleDeleteJob = async (jobId) => {
+    try {
+      await deleteEmployerJob(jobId);
+      const deletedJob = jobs.find(job => job.id === jobId);
+      setJobs(prev => prev.filter(job => job.id !== jobId));
+      setStats(prev => ({
+        ...prev,
+        totalJobs: Math.max(0, prev.totalJobs - 1),
+        activeJobs: deletedJob?.status === 'active' ? Math.max(0, prev.activeJobs - 1) : prev.activeJobs
+      }));
+    } catch (error) {
+      console.error('Failed to delete job:', error);
+      alert(error?.response?.data?.error || 'Failed to delete job');
+    }
   };
 
-  const handleStatusChange = (jobId, newStatus) => {
-    setJobs(prev => prev.map(job => 
-      job.id === jobId ? { ...job, status: newStatus } : job
-    ));
+  const handleStatusChange = async (jobId, newStatus) => {
+    const job = jobs.find((entry) => entry.id === jobId);
+    if (!job) return;
+    await handleEditJob(jobId, { ...job, status: newStatus });
   };
 
   // Application Handlers
@@ -486,22 +552,32 @@ const mockApplications = [
     }
   };
 
-  const handleScheduleInterview = (applicationId, scheduleData) => {
-    setApplications(prev => prev.map(app => 
-      app.id === applicationId 
-        ? { 
-            ...app, 
-            status: 'interview',
-            interviewSchedule: scheduleData
-          } 
-        : app
-    ));
+  const handleScheduleInterview = async (applicationId, scheduleData) => {
+    try {
+      await updateEmployerApplication(applicationId, { status: 'interview', scheduleData });
+      setApplications(prev => prev.map(app => 
+        app.id === applicationId 
+          ? { 
+              ...app, 
+              status: 'interview',
+              interviewSchedule: scheduleData
+            } 
+          : app
+      ));
+    } catch (error) {
+      console.error('Failed to schedule interview:', error);
+    }
   };
 
-  const handleApplicationStatusChange = (applicationId, newStatus) => {
-    setApplications(prev => prev.map(app => 
-      app.id === applicationId ? { ...app, status: newStatus } : app
-    ));
+  const handleApplicationStatusChange = async (applicationId, newStatus) => {
+    try {
+      await updateEmployerApplication(applicationId, { status: newStatus });
+      setApplications(prev => prev.map(app => 
+        app.id === applicationId ? { ...app, status: newStatus } : app
+      ));
+    } catch (error) {
+      console.error('Failed to update application status:', error);
+    }
   };
 
   const handleContactCandidate = (application) => {
@@ -511,10 +587,16 @@ const mockApplications = [
     window.open(`mailto:${application.candidateEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
   };
 
-  const handleAddNote = (applicationId, notes) => {
-    setApplications(prev => prev.map(app => 
-      app.id === applicationId ? { ...app, notes } : app
-    ));
+  const handleAddNote = async (applicationId, notes) => {
+    try {
+      const current = applications.find((app) => app.id === applicationId);
+      await updateEmployerApplication(applicationId, { status: current?.status || 'review', notes });
+      setApplications(prev => prev.map(app => 
+        app.id === applicationId ? { ...app, notes } : app
+      ));
+    } catch (error) {
+      console.error('Failed to save recruiter note:', error);
+    }
   };
 
   // Candidate Handlers
@@ -538,9 +620,8 @@ const mockApplications = [
 
 // Add logout handler
 const handleLogout = () => {
-  console.log('Logging out...');
-  // Add your logout logic here
-  // For example: clear tokens, redirect to login, etc.
+  logout();
+  navigate('/employer/login');
 };
 
   const handleTabChange = (tab) => {

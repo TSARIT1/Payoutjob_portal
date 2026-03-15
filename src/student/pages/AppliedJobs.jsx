@@ -4,6 +4,7 @@ import { FiMapPin, FiDollarSign, FiCalendar, FiBriefcase, FiClock, FiCheckCircle
 import Navbar from '../../pages/components/Navbar';
 import './AppliedJobs.css';
 import { formatTimeAgo } from '../../utils/timeAgo';
+import { fetchMyApplications } from '../../services/api';
 
 const AppliedJobs = () => {
   const { user } = useAuth();
@@ -90,12 +91,15 @@ const AppliedJobs = () => {
     // Simulate API call to fetch applied jobs
     const fetchAppliedJobs = async () => {
       setLoading(true);
-      // In a real app, this would be an API call
-      // For now, we'll use mock data
-      setTimeout(() => {
+      try {
+        const data = await fetchMyApplications();
+        setAppliedJobs((data.applications || []).length ? data.applications : allJobs);
+      } catch (error) {
+        console.error('Failed to load applied jobs:', error);
         setAppliedJobs(allJobs);
+      } finally {
         setLoading(false);
-      }, 1000);
+      }
     };
 
     fetchAppliedJobs();

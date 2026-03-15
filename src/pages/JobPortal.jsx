@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import Navbar from './components/Navbar';
 import AssistantPopup from '../components/AssistantPopup';
 import { formatTimeAgo } from '../utils/timeAgo';
+import { applyToJob, fetchJobs, fetchMyApplications } from '../services/api';
 import './JobPortal.css';
 
 const MULTI_SELECT_FIELDS = [
@@ -46,6 +47,7 @@ const createInitialSearchQuery = () => ({
 
 const JobPortal = () => {
   const { isDarkMode } = useTheme();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isDetailPage, setIsDetailPage] = useState(false);
@@ -58,6 +60,7 @@ const JobPortal = () => {
   const [locationSearch, setLocationSearch] = useState('');
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [activeFilters, setActiveFilters] = useState({});
+  const [apiJobs, setApiJobs] = useState([]);
 
   const [searchQuery, setSearchQuery] = useState(createInitialSearchQuery);
   const [appliedFilters, setAppliedFilters] = useState(createInitialSearchQuery);
@@ -75,6 +78,37 @@ const JobPortal = () => {
   const wrapperRef = useRef(null);
   const sortRef = useRef(null);
   const locationSearchRef = useRef(null);
+
+  useEffect(() => {
+    const loadJobs = async () => {
+      try {
+        const data = await fetchJobs();
+        setApiJobs(data.jobs || []);
+      } catch (error) {
+        console.error('Failed to load jobs:', error);
+      }
+    };
+
+    loadJobs();
+  }, []);
+
+  useEffect(() => {
+    const loadApplications = async () => {
+      if (!user || user.role !== 'Student') {
+        setAppliedJobs(new Set());
+        return;
+      }
+
+      try {
+        const data = await fetchMyApplications();
+        setAppliedJobs(new Set((data.applications || []).map((application) => application.jobId)));
+      } catch (error) {
+        console.error('Failed to load applications:', error);
+      }
+    };
+
+    loadApplications();
+  }, [user]);
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -166,6 +200,10 @@ const JobPortal = () => {
 
   const handleApplyJob = (jobId, event) => {
     event.stopPropagation();
+    if (!user) {
+      navigate('/login');
+      return;
+    }
     // Find the job data
     const job = jobCards.find(j => j.id === jobId);
     // If job has an experience requirement and user exists, check eligibility
@@ -190,20 +228,31 @@ const JobPortal = () => {
     setAssistantOpen(true);
   };
 
-  const handleAssistantSubmit = (jobId, responses, meta) => {
+  const handleAssistantSubmit = async (jobId, responses, meta) => {
     // Only mark as applied and navigate if eligibility passed
     if (meta && meta.eligible === true) {
-      // TODO: send `responses` to backend if needed
-      setAppliedJobs(prev => {
-        const newApplied = new Set(prev);
-        newApplied.add(jobId);
-        return newApplied;
-      });
-      const job = jobCards.find(j => j.id === jobId);
-      if (job) {
-        setSelectedJob({ ...job });
-        setIsDetailPage(true);
-        if (wrapperRef.current) wrapperRef.current.scrollTop = 0;
+      try {
+        await applyToJob(jobId, {
+          candidateNote: responses.notes || '',
+          responses
+        });
+        setAppliedJobs(prev => {
+          const newApplied = new Set(prev);
+          newApplied.add(jobId);
+          return newApplied;
+        });
+        const job = jobCards.find(j => j.id === jobId);
+        if (job) {
+          setSelectedJob({ ...job });
+          setIsDetailPage(true);
+          if (wrapperRef.current) wrapperRef.current.scrollTop = 0;
+        }
+      } catch (error) {
+        setExpModal({
+          open: true,
+          title: 'Application failed',
+          message: error?.response?.data?.error || 'Unable to submit your application right now.'
+        });
       }
     } else {
       // show rejection modal with reason
@@ -229,7 +278,6 @@ const JobPortal = () => {
   };
 
   // Compute user's total experience in years from AuthContext profile
-  const { user } = useAuth();
   const getUserTotalExperienceYears = () => {
     if (!user || !user.experience || !Array.isArray(user.experience)) return null;
     const now = new Date();
@@ -558,7 +606,7 @@ const JobPortal = () => {
     return diffDays;
   };
 
-  const jobCards = [
+  const fallbackJobCards = [
     {
       id: 1,
       title: "UI / UX Designer",
@@ -798,6 +846,8 @@ const JobPortal = () => {
     }
   ];
 
+  const jobCards = apiJobs.length ? apiJobs : fallbackJobCards;
+
   const jobOverviewCards = jobCards.slice(0, 6);
 
   const freshnessDaysMap = {
@@ -862,9 +912,9 @@ const JobPortal = () => {
       case 'oldest':
         return jobs.sort((a, b) => new Date(a.postedDate) - new Date(b.postedDate));
       case 'salary_high':
-        return jobs.sort((a, b) => (b.salary || 0) - (a.salary || 0));
+        return jobs.sort((a, b) => (b.salaryValue || b.salary || 0) - (a.salaryValue || a.salary || 0));
       case 'salary_low':
-        return jobs.sort((a, b) => (a.salary || 0) - (b.salary || 0));
+        return jobs.sort((a, b) => (a.salaryValue || a.salary || 0) - (b.salaryValue || b.salary || 0));
       case 'relevant':
         return jobs.sort((a, b) => getRelevanceScore(b) - getRelevanceScore(a));
       case 'title_az':

@@ -1,12 +1,20 @@
-# React + Vite
+# Payout Job Portal
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Payout is a full-stack job portal with:
 
-## Payout Job AI Assistant
+- Jobseeker and student onboarding
+- Employer authentication and hiring dashboard
+- MySQL-backed jobs and applications data
+- In-app AI assistant for guided product help
 
-This project includes an in-app AI assistant that understands the application and helps jobseekers, students, and recruiters with step-by-step guidance.
+## Stack
 
-### Setup
+- Frontend: React + Vite
+- Backend: Express
+- Database: MySQL
+- AI: OpenAI API or local-context fallback
+
+## Setup
 
 1. Install dependencies:
 
@@ -14,46 +22,62 @@ This project includes an in-app AI assistant that understands the application an
 npm install
 ```
 
-2. (Optional) Set your OpenAI API key to enable high-quality answers. Create a `.env` file in the project root:
+2. Create `.env` from `.env.example` and review these values:
 
 ```bash
-OPENAI_API_KEY=sk-...
 PORT=3001
+VITE_API_BASE_URL=http://localhost:3001/api
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=wesly8143
+MYSQL_DATABASE=payout_portal
+JWT_SECRET=change-this-secret
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
+AI_MAX_CONTEXT_DOCS=4
+VITE_AI_SERVER_URL=http://localhost:3001
 ```
 
-3. Start the AI server:
+3. Make sure MySQL is running.
+
+4. Start the backend:
 
 ```bash
 npm run server
 ```
 
-4. Start the frontend:
+5. Start the frontend:
 
 ```bash
 npm run dev
 ```
 
-5. Open the app and look for the "Payout Assistant" bubble (bottom-right). It appears globally and adapts to the current page.
+6. Open the app at `http://localhost:3000`.
 
-### Personas
+The backend will create the database schema automatically when MySQL is available.
 
-- Jobseeker: default persona across the site.
-- Recruiter: rendered in the employer dashboard.
-- Student: you can set `userType="student"` when rendering `AssistantChat` on student-specific pages.
+## Demo Logins
 
-### How it works
+- Student: `student@payoutjob.com` / `Payout@123`
+- Employer: `employer@payoutjob.com` / `Payout@123`
 
-- The server scans `src/` and `README.md` to build a local knowledge base.
-- When you ask a question, it selects relevant file snippets and sends them to the model (if configured) or replies using the local context.
+## Key Features
 
----
+- Real auth with persistent sessions
+- Student profile persistence
+- Live job listings from MySQL
+- Real application submission and tracking
+- Employer dashboard for jobs, applications, and candidate review
+- AI assistant with product-aware guidance
 
-Currently, two official plugins are available:
+## AI Assistant
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Uses OpenAI when `OPENAI_API_KEY` is configured
+- Falls back to local project context when no API key is set
+- Adapts guidance for jobseeker, student, and recruiter personas
 
-## Expanding the ESLint configuration
+## Notes
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-"# payout" 
+- If MySQL is not running, the backend will still start but API routes that need the database will return a connection error.
+- The seeded demo accounts are created automatically only when the users table is empty.
