@@ -73,7 +73,7 @@ const EmpLogin = () => {
 
   return (
     <>
-      <Navbar />
+      <Navbar mode="employer-auth" />
       <div className="emp-auth-container">
         <div className="emp-hero-section">
           <div className="emp-hero-content">

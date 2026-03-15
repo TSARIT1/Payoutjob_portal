@@ -75,7 +75,7 @@ const StudentLogin = () => {
 
   return (
     <>
-    <Navbar />
+    <Navbar mode="student-auth" />
     <div className="stu-auth-container">
       <div className="stu-hero-section">
         <div className="stu-hero-content">

@@ -27,7 +27,7 @@ export default function AdminLogin() {
 
   return (
     <>
-      <Navbar />
+      <Navbar mode="admin-auth" />
       <div style={{ minHeight: '70vh', display: 'grid', placeItems: 'center', padding: 16, background: '#f8fafc' }}>
         <div style={{ width: '100%', maxWidth: 460, background: '#fff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 24 }}>
           <h2 style={{ marginTop: 0, marginBottom: 8 }}>Super Admin Login</h2>

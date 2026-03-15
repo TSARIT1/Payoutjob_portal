@@ -8,7 +8,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import './Navbar.css';
 
-const Navbar = () => {
+const Navbar = ({ mode = 'default' }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -24,7 +24,26 @@ const Navbar = () => {
   const isStudentUser = user?.role?.toLowerCase() === 'student';
   const isEmployerUser = user?.role?.toLowerCase() === 'employer';
   const isAdminUser = user?.role?.toLowerCase() === 'admin';
-  const shouldShowEmployerLinks = !isAuthenticated || !isStudentUser;
+  const isAuthMode = mode === 'student-auth' || mode === 'employer-auth' || mode === 'admin-auth';
+  const shouldShowEmployerLinks = !isAuthenticated && !isAuthMode;
+
+  const authModeLinks = {
+    'student-auth': [
+      { label: 'Employer Login', path: '/employer/login' },
+      { label: 'Admin Login', path: '/admin/login' }
+    ],
+    'employer-auth': [
+      { label: 'Job Seeker Login', path: '/login' },
+      { label: 'Employer Register', path: '/employer/register' },
+      { label: 'Admin Login', path: '/admin/login' }
+    ],
+    'admin-auth': [
+      { label: 'Job Seeker Login', path: '/login' },
+      { label: 'Employer Login', path: '/employer/login' }
+    ]
+  };
+
+  const contextLinks = authModeLinks[mode] || [];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -342,24 +361,36 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link to="/login">
-                <motion.button 
-                  className="login-btn cursor-pointer"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FiLogIn /> {t('nav.login')}
-                </motion.button>
-              </Link>
-              <Link to="/register">
-                <motion.button 
-                  className="register-btn cursor-pointer"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <FiUser /> {t('nav.register')}
-                </motion.button>
-              </Link>
+              {isAuthMode ? (
+                <div className="auth-context-links" aria-label="Quick login routes">
+                  {contextLinks.map((entry) => (
+                    <Link key={entry.path} to={entry.path} className="auth-context-link">
+                      {entry.label}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <Link to="/login">
+                    <motion.button 
+                      className="login-btn cursor-pointer"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <FiLogIn /> {t('nav.login')}
+                    </motion.button>
+                  </Link>
+                  <Link to="/register">
+                    <motion.button 
+                      className="register-btn cursor-pointer"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <FiUser /> {t('nav.register')}
+                    </motion.button>
+                  </Link>
+                </>
+              )}
             </>
           )}
         </div>
@@ -567,16 +598,28 @@ const Navbar = () => {
                 </>
               ) : (
                 <>
-                  <motion.li variants={mobileItemVariants}>
-                    <Link to="/register" className="mobile-register-btn" onClick={() => setIsMobileMenuOpen(false)}>
-                      <FiUser /> {t('nav.register')}
-                    </Link>
-                  </motion.li>
-                  <motion.li variants={mobileItemVariants}>
-                    <Link to="/login" className="mobile-login-btn" onClick={() => setIsMobileMenuOpen(false)}>
-                      <FiLogIn /> {t('nav.login')}
-                    </Link>
-                  </motion.li>
+                  {isAuthMode ? (
+                    contextLinks.map((entry) => (
+                      <motion.li key={entry.path} variants={mobileItemVariants}>
+                        <Link to={entry.path} className="mobile-auth-context-link" onClick={() => setIsMobileMenuOpen(false)}>
+                          {entry.label}
+                        </Link>
+                      </motion.li>
+                    ))
+                  ) : (
+                    <>
+                      <motion.li variants={mobileItemVariants}>
+                        <Link to="/register" className="mobile-register-btn" onClick={() => setIsMobileMenuOpen(false)}>
+                          <FiUser /> {t('nav.register')}
+                        </Link>
+                      </motion.li>
+                      <motion.li variants={mobileItemVariants}>
+                        <Link to="/login" className="mobile-login-btn" onClick={() => setIsMobileMenuOpen(false)}>
+                          <FiLogIn /> {t('nav.login')}
+                        </Link>
+                      </motion.li>
+                    </>
+                  )}
                 </>
               )}
             </motion.ul>
