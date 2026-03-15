@@ -11,6 +11,7 @@ import ProfileSetup from "./student/pages/ProfileSetup";
 import JobPortal from "./pages/JobPortal";
 import JobDashboard from "./employer/JobDashboard";
 import Companies from "./pages/Companies";
+import AITools from "./pages/AITools";
 import SearchAppearances from "./student/pages/SearchAppearances";
 import Blogs from "./student/pages/Blogs";
 import AssistantChat from "./components/AssistantChat";
@@ -60,6 +61,7 @@ function App() {
           }
         />
         <Route path="/companies" element={<Companies />} />
+        <Route path="/ai-tools" element={<AITools />} />
         <Route path="/job" element={<JobPortal />} />
         <Route path="/jobs" element={<JobPortal />} />
         <Route

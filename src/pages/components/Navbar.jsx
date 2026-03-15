@@ -99,6 +99,7 @@ const Navbar = () => {
     { name: 'Home', path: '/' },
     { name: 'Jobs', path: '/job' },
     { name: 'Companies', path: '/companies' },
+    { name: 'AI Tools', path: '/ai-tools' },
   ];
 
   const mobileMenuVariants = {
@@ -129,6 +130,13 @@ const Navbar = () => {
               whileTap={{ scale: 0.95 }}
             >
               <a href="/">Home</a>
+            </motion.li>
+
+            <motion.li
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <a href="/ai-tools">AI Tools</a>
             </motion.li>
 
             <motion.li

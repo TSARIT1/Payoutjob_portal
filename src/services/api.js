@@ -124,6 +124,36 @@ export async function sendEmployerEmail(payload) {
   return response.data;
 }
 
+export async function generateAiJobPosting(payload) {
+  const response = await API.post('/ai/job-posting', payload);
+  return response.data;
+}
+
+export async function screenAiApplication(payload) {
+  const response = await API.post('/ai/screen-application', payload);
+  return response.data;
+}
+
+export async function enhanceAiCv(payload) {
+  const response = await API.post('/ai/cv-enhance', payload);
+  return response.data;
+}
+
+export async function autofillAiApplication(payload) {
+  const response = await API.post('/ai/autofill-application', payload);
+  return response.data;
+}
+
+export async function tailorAiResume(payload) {
+  const response = await API.post('/ai/tailor-resume', payload);
+  return response.data;
+}
+
+export async function getAiReferralInsights(payload) {
+  const response = await API.post('/ai/referral-insights', payload);
+  return response.data;
+}
+
 export const StudentRegister = registerStudent;
 export const StudentLogin = (data) => loginUser({ ...data, role: 'Student' });
 export const OtpVerification = async () => ({ success: true });

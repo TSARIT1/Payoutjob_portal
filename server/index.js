@@ -156,6 +156,137 @@ function formatAssistantReply(text) {
   return [sentences[0], ...sentences.slice(1).map((sentence, index) => `${index + 1}. ${sentence}`)].join('\n').slice(0, 1200);
 }
 
+function splitSkillTokens(text) {
+  const tokens = tokenize(text);
+  const unique = new Set(tokens);
+  return Array.from(unique);
+}
+
+function extractNamedSkills(text) {
+  const known = [
+    'react', 'node', 'nodejs', 'javascript', 'typescript', 'python', 'java',
+    'sql', 'mysql', 'postgresql', 'aws', 'azure', 'gcp', 'docker', 'kubernetes',
+    'html', 'css', 'figma', 'seo', 'excel', 'powerbi', 'tableau', 'communication'
+  ];
+  const lower = String(text || '').toLowerCase();
+  return known.filter((skill) => lower.includes(skill));
+}
+
+function buildCvEnhancement(cvText, jobTitle, requiredSkillsRaw) {
+  const text = String(cvText || '');
+  const lower = text.toLowerCase();
+  const misspellings = {
+    recieve: 'receive',
+    experiance: 'experience',
+    seperate: 'separate',
+    acheived: 'achieved',
+    managment: 'management'
+  };
+
+  const spellingIssues = Object.entries(misspellings)
+    .filter(([wrong]) => lower.includes(wrong))
+    .map(([wrong, correct]) => `${wrong} -> ${correct}`);
+
+  const grammarIssues = [];
+  const sentences = text.split(/(?<=[.!?])\s+/).filter(Boolean);
+  for (const sentence of sentences.slice(0, 30)) {
+    const trimmed = sentence.trim();
+    if (trimmed && /^[a-z]/.test(trimmed)) {
+      grammarIssues.push(`Sentence should start with uppercase: "${trimmed.slice(0, 60)}"`);
+    }
+    if (/\b(\w+)\s+\1\b/i.test(trimmed)) {
+      grammarIssues.push(`Repeated word found: "${trimmed.slice(0, 60)}"`);
+    }
+  }
+
+  const requiredSkills = splitSkillTokens(requiredSkillsRaw || '').slice(0, 20);
+  const presentSkills = new Set(extractNamedSkills(cvText));
+  const suggestedSkills = requiredSkills
+    .filter((skill) => !presentSkills.has(skill))
+    .slice(0, 8);
+
+  const profileObjective = `Results-oriented professional seeking ${jobTitle || 'a target role'} opportunity, bringing strong ownership, measurable outcomes, and collaboration across product, engineering, and operations.`;
+
+  return {
+    spellingCheck: spellingIssues.length ? spellingIssues : ['No obvious spelling issues found.'],
+    grammarCheck: grammarIssues.length ? grammarIssues.slice(0, 8) : ['No major grammar issues found.'],
+    profileObjective,
+    suggestedSkill: suggestedSkills.length ? suggestedSkills : ['Add role-specific and measurable skills aligned to job requirements.']
+  };
+}
+
+function extractAutofill(resumeText) {
+  const text = String(resumeText || '');
+  const email = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i)?.[0] || '';
+  const phone = text.match(/(\+?\d[\d\s-]{8,}\d)/)?.[0] || '';
+  const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const name = lines.find((line) => /^[A-Za-z][A-Za-z\s.]{2,40}$/.test(line)) || '';
+  const skills = extractNamedSkills(text).slice(0, 10);
+  return { name, email, phone, skills };
+}
+
+function buildTailoredResume(resumeText, jobDescription) {
+  const resumeSkills = new Set(extractNamedSkills(resumeText));
+  const jobSkills = extractNamedSkills(jobDescription);
+  const prioritySkills = jobSkills.filter((skill) => !resumeSkills.has(skill)).slice(0, 6);
+  const matchedSkills = jobSkills.filter((skill) => resumeSkills.has(skill)).slice(0, 6);
+
+  const bullets = [
+    'Add a results summary in the top section with quantified impact (%, revenue, time saved).',
+    ...matchedSkills.map((skill) => `Highlight a project bullet proving hands-on ${skill} impact.`),
+    ...prioritySkills.map((skill) => `Add evidence or training for ${skill} to align with this job.`)
+  ].slice(0, 8);
+
+  return {
+    matchedSkills,
+    missingSkills: prioritySkills,
+    tailoredBullets: bullets
+  };
+}
+
+function buildScreening(jobDescription, candidateProfile) {
+  const jobSkills = extractNamedSkills(jobDescription);
+  const candidateSkills = new Set(extractNamedSkills(candidateProfile));
+  const matched = jobSkills.filter((skill) => candidateSkills.has(skill));
+  const missing = jobSkills.filter((skill) => !candidateSkills.has(skill));
+  const fitScore = jobSkills.length ? Math.round((matched.length / jobSkills.length) * 100) : 60;
+  const recommendation = fitScore >= 75 ? 'Strong shortlist' : fitScore >= 50 ? 'Consider for interview with targeted screening' : 'Needs upskilling before shortlist';
+
+  return {
+    fitScore,
+    recommendation,
+    matchedSkills: matched,
+    missingSkills: missing.slice(0, 8)
+  };
+}
+
+function buildJobPostingDraft(input) {
+  const role = input.title || 'Professional';
+  const department = input.department || 'Operations';
+  const location = input.location || 'Remote';
+  const type = input.type || 'Full-time';
+  const experience = input.experience || '2-4 years';
+
+  return {
+    title: role,
+    department,
+    location,
+    type,
+    experience,
+    summary: `We are hiring a ${role} to join our ${department} team. This ${type} role is based in ${location}.`,
+    responsibilities: [
+      'Deliver high-quality outcomes with clear ownership and timelines.',
+      'Collaborate across product, design, engineering, and operations.',
+      'Analyze performance metrics and continuously improve execution.'
+    ],
+    requirements: [
+      `${experience} of relevant experience in a similar role.`,
+      'Strong communication and stakeholder management skills.',
+      'Proven ability to execute in fast-paced environments.'
+    ]
+  };
+}
+
 function buildLocalFallbackReply(query, userType, rankedDocs) {
   const lowerQuery = String(query || '').toLowerCase();
   const persona = String(userType || '').toLowerCase();
@@ -913,6 +1044,61 @@ app.patch('/api/employer/applications/:applicationId', authRequired(['Employer']
   );
 
   res.json({ message: 'Application updated successfully.' });
+}));
+
+app.post('/api/ai/job-posting', authRequired(['Employer']), asyncRoute(async (req, res) => {
+  const draft = buildJobPostingDraft(req.body || {});
+  res.json({ draft });
+}));
+
+app.post('/api/ai/screen-application', authRequired(['Employer']), asyncRoute(async (req, res) => {
+  const jobDescription = String(req.body?.jobDescription || '');
+  const candidateProfile = String(req.body?.candidateProfile || '');
+  if (!jobDescription || !candidateProfile) {
+    return res.status(400).json({ error: 'jobDescription and candidateProfile are required.' });
+  }
+  const analysis = buildScreening(jobDescription, candidateProfile);
+  res.json({ analysis });
+}));
+
+app.post('/api/ai/cv-enhance', authRequired(), asyncRoute(async (req, res) => {
+  const cvText = String(req.body?.cvText || '');
+  if (!cvText) {
+    return res.status(400).json({ error: 'cvText is required.' });
+  }
+  const result = buildCvEnhancement(cvText, req.body?.jobTitle, req.body?.requiredSkills);
+  res.json({ result });
+}));
+
+app.post('/api/ai/autofill-application', authRequired(), asyncRoute(async (req, res) => {
+  const resumeText = String(req.body?.resumeText || '');
+  if (!resumeText) {
+    return res.status(400).json({ error: 'resumeText is required.' });
+  }
+  const fields = extractAutofill(resumeText);
+  res.json({ fields });
+}));
+
+app.post('/api/ai/tailor-resume', authRequired(), asyncRoute(async (req, res) => {
+  const resumeText = String(req.body?.resumeText || '');
+  const jobDescription = String(req.body?.jobDescription || '');
+  if (!resumeText || !jobDescription) {
+    return res.status(400).json({ error: 'resumeText and jobDescription are required.' });
+  }
+  const tailored = buildTailoredResume(resumeText, jobDescription);
+  res.json({ tailored });
+}));
+
+app.post('/api/ai/referral-insights', authRequired(), asyncRoute(async (req, res) => {
+  const company = String(req.body?.company || 'target company');
+  const role = String(req.body?.role || 'target role');
+  const insights = [
+    `Identify 5 employees at ${company} in or near ${role} on LinkedIn.`,
+    'Send a concise outreach message with shared context and specific ask (15-minute chat).',
+    'Prepare a referral packet: tailored resume, portfolio links, and role-fit bullets.',
+    'Follow up after 4-5 business days with one clear update and gratitude note.'
+  ];
+  res.json({ insights });
 }));
 
 app.post('/ai/chat', asyncRoute(async (req, res) => {
