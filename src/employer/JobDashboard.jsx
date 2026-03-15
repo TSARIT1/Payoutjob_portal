@@ -11,6 +11,8 @@ import {
   createEmployerJob,
   deleteEmployerJob,
   fetchEmployerDashboard,
+  fetchEmployerEmailHistory,
+  sendEmployerEmail,
   updateEmployerApplication,
   updateEmployerJob
 } from '../services/api';
@@ -82,6 +84,20 @@ const JobDashboard = () => {
   });
   const [showProfileEditor, setShowProfileEditor] = useState(false);
   const [modalEditing, setModalEditing] = useState(false);
+  const [emailHistory, setEmailHistory] = useState([]);
+  const [emailTemplates, setEmailTemplates] = useState([]);
+  const [emailComposer, setEmailComposer] = useState({
+    open: false,
+    applicationId: null,
+    recipientName: '',
+    recipientEmail: '',
+    jobTitle: '',
+    templateKey: 'interview_invite',
+    subject: '',
+    body: ''
+  });
+  const [emailStatus, setEmailStatus] = useState({ type: '', message: '' });
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -95,6 +111,7 @@ const JobDashboard = () => {
           totalApplications: 0,
           hiredCandidates: 0
         });
+        setEmailTemplates(data.emailTemplates || []);
         if (data.profile) {
           setEmployerProfile((prev) => ({ ...prev, ...data.profile }));
         }
@@ -106,6 +123,22 @@ const JobDashboard = () => {
     loadDashboard();
   }, []);
 
+  useEffect(() => {
+    const loadEmailHistory = async () => {
+      try {
+        const data = await fetchEmployerEmailHistory();
+        setEmailHistory(data.emails || []);
+        if ((data.templates || []).length) {
+          setEmailTemplates(data.templates);
+        }
+      } catch (error) {
+        console.error('Failed to load email history:', error);
+      }
+    };
+
+    loadEmailHistory();
+  }, []);
+
   const openProfileEditor = (e) => {
     if (e && e.stopPropagation) e.stopPropagation();
     // debug log - remove if not needed
@@ -113,16 +146,6 @@ const JobDashboard = () => {
     setModalEditing(false);
     setShowProfileEditor(true);
   };
-
-  // load saved profile (frontend-only)
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('employerProfile');
-      if (saved) setEmployerProfile(JSON.parse(saved));
-    } catch (e) {
-      // ignore
-    }
-  }, []);
 
   const handleLogoChange = (e) => {
     const file = e.target.files && e.target.files[0];
@@ -156,306 +179,6 @@ const JobDashboard = () => {
     }
   };
 
-  // Mock data
-  useEffect(() => {
-   const mockJobs = [
-  {
-    id: 1,
-    title: 'Senior Frontend Developer',
-    department: 'Engineering',
-    location: 'Remote',
-    type: 'Full-time',
-    status: 'active',
-    applications: 24,
-    datePosted: '2024-01-15',
-    salary: '₹90,000 - ₹120,000'
-  },
-  {
-    id: 2,
-    title: 'Product Manager',
-    department: 'Product',
-    location: 'New York, NY',
-    type: 'Full-time',
-    status: 'active',
-    applications: 18,
-    datePosted: '2024-01-10',
-    salary: '₹110,000 - ₹140,000'
-  },
-  {
-    id: 3,
-    title: 'UX Designer',
-    department: 'Design',
-    location: 'San Francisco, CA',
-    type: 'Contract',
-    status: 'draft',
-    applications: 0,
-    datePosted: '2024-01-18',
-    salary: '₹80,000 - ₹100,000'
-  },
-  {
-    id: 4,
-    title: 'Backend Engineer',
-    department: 'Engineering',
-    location: 'Bangalore, India',
-    type: 'Full-time',
-    status: 'active',
-    applications: 32,
-    datePosted: '2023-12-01',
-    salary: '₹95,000 - ₹125,000'
-  },
-  {
-    id: 5,
-    title: 'Data Scientist',
-    department: 'Analytics',
-    location: 'Hybrid',
-    type: 'Full-time',
-    status: 'active',
-    applications: 15,
-    datePosted: '2024-01-08',
-    salary: '₹100,000 - ₹130,000'
-  },
-  {
-    id: 6,
-    title: 'DevOps Engineer',
-    department: 'Engineering',
-    location: 'Remote',
-    type: 'Full-time',
-    status: 'closed',
-    applications: 28,
-    datePosted: '2023-11-20',
-    salary: '₹85,000 - ₹115,000'
-  },
-  {
-    id: 7,
-    title: 'Marketing Intern',
-    department: 'Marketing',
-    location: 'Mumbai, India',
-    type: 'Internship',
-    status: 'active',
-    applications: 42,
-    datePosted: '2024-01-05',
-    salary: '₹25,000 - ₹35,000'
-  },
-  {
-    id: 8,
-    title: 'Sales Representative',
-    department: 'Sales',
-    location: 'Delhi, India',
-    type: 'Full-time',
-    status: 'draft',
-    applications: 0,
-    datePosted: '2024-01-22',
-    salary: '₹60,000 - ₹80,000'
-  }
-];
-
-const mockApplications = [
-  {
-    id: 1,
-    jobId: 1,
-    candidateName: 'John Smith',
-    candidateEmail: 'john.smith@email.com',
-    candidateLocation: 'San Francisco, CA',
-    status: 'review',
-    appliedDate: '2024-01-20',
-    experience: '5 years',
-    skills: ['React', 'TypeScript', 'Node.js', 'JavaScript', 'HTML/CSS'],
-    cvUrl: 'https://example.com/john-smith-cv.pdf',
-    notes: 'Strong portfolio with enterprise projects'
-  },
-  {
-    id: 2,
-    jobId: 1,
-    candidateName: 'Sarah Johnson',
-    candidateEmail: 'sarah.j@email.com',
-    candidateLocation: 'New York, NY',
-    status: 'interview',
-    appliedDate: '2024-01-18',
-    experience: '3 years',
-    skills: ['Vue', 'JavaScript', 'CSS', 'UI/UX', 'Figma'],
-    cvUrl: 'https://example.com/sarah-johnson-cv.pdf',
-    notes: 'Good communication skills'
-  },
-  {
-    id: 3,
-    jobId: 2,
-    candidateName: 'Mike Chen',
-    candidateEmail: 'mike.chen@email.com',
-    candidateLocation: 'Chicago, IL',
-    status: 'hired',
-    appliedDate: '2024-01-12',
-    experience: '6 years',
-    skills: ['Product Strategy', 'Agile', 'Analytics', 'Roadmapping', 'JIRA'],
-    cvUrl: 'https://example.com/mike-chen-cv.pdf',
-    notes: 'Previous experience at FAANG company'
-  },
-  {
-    id: 4,
-    jobId: 1,
-    candidateName: 'Emily Davis',
-    candidateEmail: 'emily.davis@email.com',
-    candidateLocation: 'Austin, TX',
-    status: 'rejected',
-    appliedDate: '2024-01-22',
-    experience: '4 years',
-    skills: ['React', 'Redux', 'Testing', 'Jest', 'Webpack'],
-    cvUrl: 'https://example.com/emily-davis-cv.pdf',
-    notes: 'Lacking TypeScript experience'
-  },
-  {
-    id: 5,
-    jobId: 4,
-    candidateName: 'Raj Patel',
-    candidateEmail: 'raj.patel@email.com',
-    candidateLocation: 'Bangalore, India',
-    status: 'interview',
-    appliedDate: '2024-01-19',
-    experience: '4 years',
-    skills: ['Java', 'Spring Boot', 'MySQL', 'Microservices', 'AWS'],
-    cvUrl: 'https://example.com/raj-patel-cv.pdf',
-    notes: 'Strong backend fundamentals'
-  },
-  {
-    id: 6,
-    jobId: 5,
-    candidateName: 'Priya Sharma',
-    candidateEmail: 'priya.sharma@email.com',
-    candidateLocation: 'Hyderabad, India',
-    status: 'review',
-    appliedDate: '2024-01-21',
-    experience: '3 years',
-    skills: ['Python', 'Machine Learning', 'TensorFlow', 'SQL', 'Statistics'],
-    cvUrl: 'https://example.com/priya-sharma-cv.pdf',
-    notes: 'PhD in Data Science'
-  },
-  {
-    id: 7,
-    jobId: 3,
-    candidateName: 'David Kim',
-    candidateEmail: 'david.kim@email.com',
-    candidateLocation: 'Seattle, WA',
-    status: 'review',
-    appliedDate: '2024-01-16',
-    experience: '2 years',
-    skills: ['Figma', 'Sketch', 'Adobe Creative Suite', 'Wireframing', 'Prototyping'],
-    cvUrl: 'https://example.com/david-kim-cv.pdf',
-    notes: 'Creative portfolio'
-  },
-  {
-    id: 8,
-    jobId: 6,
-    candidateName: 'Maria Garcia',
-    candidateEmail: 'maria.garcia@email.com',
-    candidateLocation: 'Miami, FL',
-    status: 'hired',
-    appliedDate: '2024-01-14',
-    experience: '5 years',
-    skills: ['Docker', 'Kubernetes', 'AWS', 'CI/CD', 'Linux'],
-    cvUrl: 'https://example.com/maria-garcia-cv.pdf',
-    notes: 'Excellent infrastructure knowledge'
-  },
-  {
-    id: 9,
-    jobId: 7,
-    candidateName: 'Amit Kumar',
-    candidateEmail: 'amit.kumar@email.com',
-    candidateLocation: 'Mumbai, India',
-    status: 'interview',
-    appliedDate: '2024-01-23',
-    experience: '0 years',
-    skills: ['Social Media', 'Content Writing', 'SEO', 'Google Analytics'],
-    cvUrl: 'https://example.com/amit-kumar-cv.pdf',
-    notes: 'Recent graduate with marketing degree'
-  },
-  {
-    id: 10,
-    jobId: 1,
-    candidateName: 'Lisa Wang',
-    candidateEmail: 'lisa.wang@email.com',
-    candidateLocation: 'Toronto, Canada',
-    status: 'review',
-    appliedDate: '2024-01-24',
-    experience: '2 years',
-    skills: ['React', 'Next.js', 'GraphQL', 'TypeScript', 'Tailwind'],
-    cvUrl: 'https://example.com/lisa-wang-cv.pdf',
-    notes: 'Good modern tech stack knowledge'
-  },
-  {
-    id: 11,
-    jobId: 4,
-    candidateName: 'Carlos Rodriguez',
-    candidateEmail: 'carlos.rodriguez@email.com',
-    candidateLocation: 'Mexico City, Mexico',
-    status: 'rejected',
-    appliedDate: '2024-01-17',
-    experience: '1 year',
-    skills: ['Python', 'Django', 'PostgreSQL', 'REST APIs'],
-    cvUrl: 'https://example.com/carlos-rodriguez-cv.pdf',
-    notes: 'Not enough experience for senior role'
-  },
-  {
-    id: 12,
-    jobId: 5,
-    candidateName: 'Wei Zhang',
-    candidateEmail: 'wei.zhang@email.com',
-    candidateLocation: 'Singapore',
-    status: 'interview',
-    appliedDate: '2024-01-25',
-    experience: '4 years',
-    skills: ['R', 'Python', 'Tableau', 'Big Data', 'Statistical Modeling'],
-    cvUrl: 'https://example.com/wei-zhang-cv.pdf',
-    notes: 'Strong analytical background'
-  },
-  {
-    id: 13,
-    jobId: 2,
-    candidateName: 'Sophie Martin',
-    candidateEmail: 'sophie.martin@email.com',
-    candidateLocation: 'Paris, France',
-    status: 'review',
-    appliedDate: '2024-01-26',
-    experience: '5 years',
-    skills: ['Product Management', 'User Research', 'A/B Testing', 'Data Analysis'],
-    cvUrl: 'https://example.com/sophie-martin-cv.pdf',
-    notes: 'MBA from INSEAD'
-  },
-  {
-    id: 14,
-    jobId: 7,
-    candidateName: 'James Wilson',
-    candidateEmail: 'james.wilson@email.com',
-    candidateLocation: 'London, UK',
-    status: 'rejected',
-    appliedDate: '2024-01-27',
-    experience: '1 year',
-    skills: ['Digital Marketing', 'Social Media', 'Content Creation'],
-    cvUrl: 'https://example.com/james-wilson-cv.pdf',
-    notes: 'Looking for full-time role, not internship'
-  },
-  {
-    id: 15,
-    jobId: 3,
-    candidateName: 'Anna Kowalski',
-    candidateEmail: 'anna.kowalski@email.com',
-    candidateLocation: 'Berlin, Germany',
-    status: 'hired',
-    appliedDate: '2024-01-28',
-    experience: '3 years',
-    skills: ['UI Design', 'User Research', 'Prototyping', 'Design Systems'],
-    cvUrl: 'https://example.com/anna-kowalski-cv.pdf',
-    notes: 'Excellent design portfolio'
-  }
-];
-
-    setJobs(mockJobs);
-    setApplications(mockApplications);
-    setStats({
-      totalJobs: mockJobs.length,
-      activeJobs: mockJobs.filter(job => job.status === 'active').length,
-      totalApplications: mockApplications.length,
-      hiredCandidates: mockApplications.filter(app => app.status === 'hired').length
-    });
-  }, []);
 
   // Job Form Handlers
   const handleInputChange = (e) => {
@@ -580,11 +303,28 @@ const mockApplications = [
     }
   };
 
+  const openEmailComposer = (candidate, defaults = {}) => {
+    const selectedTemplate = emailTemplates.find((template) => template.key === (defaults.templateKey || 'interview_invite')) || emailTemplates[0];
+    setEmailStatus({ type: '', message: '' });
+    setEmailComposer({
+      open: true,
+      applicationId: defaults.applicationId || null,
+      recipientName: candidate.candidateName || '',
+      recipientEmail: candidate.candidateEmail || '',
+      jobTitle: defaults.jobTitle || '',
+      templateKey: selectedTemplate?.key || 'interview_invite',
+      subject: selectedTemplate?.subject || 'Opportunity with {{companyName}}',
+      body: selectedTemplate?.body || 'Hi {{candidateName}},\n\nThank you for your interest in {{companyName}}.\n\nBest regards,\n{{senderName}}'
+    });
+  };
+
   const handleContactCandidate = (application) => {
-    console.log('Contact candidate:', application.candidateEmail);
-    const subject = `Regarding your application`;
-    const body = `Dear ${application.candidateName},\n\n`;
-    window.open(`mailto:${application.candidateEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+    const job = jobs.find((entry) => entry.id === application.jobId);
+    openEmailComposer(application, {
+      applicationId: application.id,
+      jobTitle: job?.title || '',
+      templateKey: application.status === 'interview' ? 'interview_invite' : 'shortlist_update'
+    });
   };
 
   const handleAddNote = async (applicationId, notes) => {
@@ -601,10 +341,49 @@ const mockApplications = [
 
   // Candidate Handlers
   const handleCandidateContact = (candidate) => {
-    console.log('Contact candidate:', candidate.candidateEmail);
-    const subject = 'Opportunity at Our Company';
-    const body = `Dear ${candidate.candidateName},\n\nWe were impressed by your profile.`;
-    window.open(`mailto:${candidate.candidateEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+    openEmailComposer(candidate, { templateKey: 'custom_outreach' });
+  };
+
+  const handleEmailTemplateChange = (templateKey) => {
+    const selectedTemplate = emailTemplates.find((template) => template.key === templateKey);
+    if (!selectedTemplate) return;
+    setEmailComposer((prev) => ({
+      ...prev,
+      templateKey,
+      subject: selectedTemplate.subject,
+      body: selectedTemplate.body
+    }));
+  };
+
+  const handleSendManagedEmail = async (event) => {
+    event.preventDefault();
+    setIsSendingEmail(true);
+    setEmailStatus({ type: '', message: '' });
+    try {
+      const response = await sendEmployerEmail({
+        applicationId: emailComposer.applicationId,
+        recipientName: emailComposer.recipientName,
+        recipientEmail: emailComposer.recipientEmail,
+        jobTitle: emailComposer.jobTitle,
+        templateKey: emailComposer.templateKey,
+        subject: emailComposer.subject,
+        body: emailComposer.body
+      });
+      setEmailHistory((prev) => [{
+        ...response.email,
+        createdAt: new Date().toISOString()
+      }, ...prev]);
+      setEmailStatus({ type: response.email.status === 'failed' ? 'error' : 'success', message: response.message });
+      if (response.email.status !== 'failed') {
+        setTimeout(() => {
+          setEmailComposer((prev) => ({ ...prev, open: false }));
+        }, 800);
+      }
+    } catch (error) {
+      setEmailStatus({ type: 'error', message: error?.response?.data?.error || 'Failed to send managed email.' });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   const handleCandidateViewResume = (candidate) => {
@@ -854,7 +633,7 @@ const handleLogout = () => {
         {/* Tab Content */}
         <div className="tab-content">
           {activeTab === 'overview' && (
-            <OverviewTab jobs={jobs} applications={applications} />
+            <OverviewTab jobs={jobs} applications={applications} emailHistory={emailHistory} />
           )}
 
           {activeTab === 'jobs' && (
@@ -893,6 +672,80 @@ const handleLogout = () => {
           )}
         </div>
       </div>
+
+      {emailComposer.open && (
+        <div className="modal-overlay" onClick={() => setEmailComposer((prev) => ({ ...prev, open: false }))}>
+          <div className="modal-content" onClick={(event) => event.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Professional Email Management</h3>
+              <button className="btn-close" onClick={() => setEmailComposer((prev) => ({ ...prev, open: false }))}>✕</button>
+            </div>
+            <form className="modal-body" onSubmit={handleSendManagedEmail}>
+              <div style={{ display: 'grid', gap: 12 }}>
+                <div className="form-grid">
+                  <input
+                    className="company-input"
+                    value={emailComposer.recipientName}
+                    onChange={(event) => setEmailComposer((prev) => ({ ...prev, recipientName: event.target.value }))}
+                    placeholder="Candidate name"
+                  />
+                  <input
+                    className="company-input"
+                    value={emailComposer.recipientEmail}
+                    onChange={(event) => setEmailComposer((prev) => ({ ...prev, recipientEmail: event.target.value }))}
+                    placeholder="Candidate email"
+                    type="email"
+                  />
+                </div>
+                <div className="form-grid">
+                  <select
+                    className="company-input"
+                    value={emailComposer.templateKey}
+                    onChange={(event) => handleEmailTemplateChange(event.target.value)}
+                  >
+                    {emailTemplates.map((template) => (
+                      <option key={template.key} value={template.key}>{template.label}</option>
+                    ))}
+                  </select>
+                  <input
+                    className="company-input"
+                    value={emailComposer.jobTitle}
+                    onChange={(event) => setEmailComposer((prev) => ({ ...prev, jobTitle: event.target.value }))}
+                    placeholder="Job title"
+                  />
+                </div>
+                <input
+                  className="company-input"
+                  value={emailComposer.subject}
+                  onChange={(event) => setEmailComposer((prev) => ({ ...prev, subject: event.target.value }))}
+                  placeholder="Email subject"
+                />
+                <textarea
+                  className="company-input"
+                  value={emailComposer.body}
+                  onChange={(event) => setEmailComposer((prev) => ({ ...prev, body: event.target.value }))}
+                  rows={10}
+                  placeholder="Write a professional message..."
+                />
+                <div style={{ fontSize: 12, color: '#64748b' }}>
+                  Supported placeholders: {'{{candidateName}}'}, {'{{jobTitle}}'}, {'{{companyName}}'}, {'{{senderName}}'}
+                </div>
+                {emailStatus.message && (
+                  <div className={emailStatus.type === 'error' ? 'emp-error emp-error-general' : 'emp-error emp-error-general'} style={{ background: emailStatus.type === 'error' ? '#fef2f2' : '#ecfdf5', color: emailStatus.type === 'error' ? '#991b1b' : '#166534', border: '1px solid', borderColor: emailStatus.type === 'error' ? '#fecaca' : '#bbf7d0' }}>
+                    {emailStatus.message}
+                  </div>
+                )}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                  <button type="button" className="btn-secondary" onClick={() => setEmailComposer((prev) => ({ ...prev, open: false }))}>Cancel</button>
+                  <button type="submit" className="btn-update" disabled={isSendingEmail}>
+                    {isSendingEmail ? 'Sending...' : 'Send Email'}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
         {/* Profile Editor Modal */}
         {showProfileEditor && (

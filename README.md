@@ -69,6 +69,7 @@ The backend will create the database schema automatically when MySQL is availabl
 - Live job listings from MySQL
 - Real application submission and tracking
 - Employer dashboard for jobs, applications, and candidate review
+- Professional email management with templates, send history, and SMTP delivery support
 - AI assistant with product-aware guidance
 
 ## AI Assistant
@@ -76,6 +77,25 @@ The backend will create the database schema automatically when MySQL is availabl
 - Uses OpenAI when `OPENAI_API_KEY` is configured
 - Falls back to local project context when no API key is set
 - Adapts guidance for jobseeker, student, and recruiter personas
+
+## Email Management
+
+- Employers can send professional candidate emails from the dashboard
+- Built-in templates: interview invite, shortlist update, and custom outreach
+- Every send is tracked in MySQL email history
+- If SMTP is not configured, sends are stored as `simulated` so you can still test the workflow
+
+SMTP environment variables:
+
+```bash
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=
+SMTP_PASSWORD=
+SMTP_FROM_EMAIL=
+SMTP_FROM_NAME=Payout Talent Team
+```
 
 ## Notes
 

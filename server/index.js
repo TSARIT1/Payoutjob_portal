@@ -8,6 +8,12 @@ import OpenAI from 'openai';
 import { config } from './lib/config.js';
 import { initializeDatabase, getDatabaseState, parseJson, query } from './lib/database.js';
 import { demoCredentials } from './lib/demoData.js';
+import {
+  getDefaultEmailTemplates,
+  getEmailConfigState,
+  populateEmailTemplate,
+  sendManagedEmail
+} from './lib/emailService.js';
 
 await initializeDatabase();
 
@@ -461,6 +467,7 @@ app.get('/api/health', asyncRoute(async (_req, res) => {
     ai: {
       enabled: Boolean(openai)
     },
+    email: getEmailConfigState(),
     demoCredentials
   });
 }));
@@ -679,7 +686,128 @@ app.get('/api/employer/dashboard', authRequired(['Employer']), asyncRoute(async 
     profile: req.authUser,
     jobs,
     applications,
-    stats
+    stats,
+    emailTemplates: getDefaultEmailTemplates()
+  });
+}));
+
+app.get('/api/employer/email-history', authRequired(['Employer']), asyncRoute(async (req, res) => {
+  const rows = await query(
+    `SELECT *
+     FROM email_messages
+     WHERE employer_id = ?
+     ORDER BY created_at DESC
+     LIMIT 50`,
+    [req.authUser.id]
+  );
+
+  res.json({
+    emails: rows.map((row) => ({
+      id: row.id,
+      applicationId: row.application_id,
+      recipientEmail: row.recipient_email,
+      recipientName: row.recipient_name,
+      subject: row.subject,
+      bodyText: row.body_text,
+      templateKey: row.template_key,
+      status: row.status,
+      providerMessageId: row.provider_message_id,
+      providerResponse: row.provider_response,
+      createdAt: row.created_at
+    })),
+    templates: getDefaultEmailTemplates(),
+    config: getEmailConfigState()
+  });
+}));
+
+app.post('/api/employer/send-email', authRequired(['Employer']), asyncRoute(async (req, res) => {
+  const applicationId = req.body.applicationId ? Number(req.body.applicationId) : null;
+  let applicationRecord = null;
+
+  if (applicationId) {
+    const rows = await query(
+      `SELECT a.id, a.job_id, s.full_name AS candidate_name, s.email AS candidate_email, j.title AS job_title
+       FROM applications a
+       INNER JOIN jobs j ON j.id = a.job_id
+       INNER JOIN users s ON s.id = a.student_id
+       WHERE a.id = ? AND j.employer_id = ?
+       LIMIT 1`,
+      [applicationId, req.authUser.id]
+    );
+    applicationRecord = rows[0] || null;
+  }
+
+  const recipientEmail = String(req.body.recipientEmail || applicationRecord?.candidate_email || '').trim();
+  const recipientName = String(req.body.recipientName || applicationRecord?.candidate_name || '').trim();
+  const subjectInput = String(req.body.subject || '').trim();
+  const bodyInput = String(req.body.body || '').trim();
+  const templateKey = String(req.body.templateKey || '').trim() || null;
+
+  if (!recipientEmail || !subjectInput || !bodyInput) {
+    return res.status(400).json({ error: 'Recipient email, subject, and body are required.' });
+  }
+
+  const variables = {
+    candidateName: recipientName || 'Candidate',
+    companyName: req.authUser.companyName || req.authUser.name || 'Payout',
+    senderName: req.authUser.hrName || req.authUser.name || 'Hiring Team',
+    jobTitle: req.body.jobTitle || applicationRecord?.job_title || 'the role'
+  };
+
+  const subject = populateEmailTemplate(subjectInput, variables);
+  const bodyText = populateEmailTemplate(bodyInput, variables);
+
+  let delivery;
+  try {
+    delivery = await sendManagedEmail({
+      to: recipientEmail,
+      subject,
+      text: bodyText,
+      html: `<div style="font-family:Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.6;color:#0f172a;white-space:pre-wrap">${bodyText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`
+    });
+  } catch (error) {
+    delivery = {
+      status: 'failed',
+      providerMessageId: null,
+      providerResponse: error instanceof Error ? error.message : 'Unknown email error'
+    };
+  }
+
+  const result = await query(
+    `INSERT INTO email_messages (employer_id, application_id, recipient_email, recipient_name, subject, body_text, template_key, status, provider_message_id, provider_response)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      req.authUser.id,
+      applicationId,
+      recipientEmail,
+      recipientName,
+      subject,
+      bodyText,
+      templateKey,
+      delivery.status,
+      delivery.providerMessageId,
+      delivery.providerResponse
+    ]
+  );
+
+  res.status(delivery.status === 'failed' ? 502 : 201).json({
+    message: delivery.status === 'sent'
+      ? 'Email sent successfully.'
+      : delivery.status === 'simulated'
+        ? 'SMTP is not configured yet. Email was saved in history as a simulated send.'
+        : 'Email delivery failed and was logged.',
+    email: {
+      id: result.insertId,
+      applicationId,
+      recipientEmail,
+      recipientName,
+      subject,
+      bodyText,
+      templateKey,
+      status: delivery.status,
+      providerMessageId: delivery.providerMessageId,
+      providerResponse: delivery.providerResponse
+    }
   });
 }));
 

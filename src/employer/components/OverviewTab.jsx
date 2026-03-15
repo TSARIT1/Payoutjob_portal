@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const OverviewTab = ({ jobs, applications }) => {
+const OverviewTab = ({ jobs, applications, emailHistory = [] }) => {
   const getStatusBadge = (status) => {
     const statusConfig = {
       active: { class: 'evw-badge-active', label: 'Active' },
@@ -83,6 +83,45 @@ const OverviewTab = ({ jobs, applications }) => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        <div className="overview-card">
+          <div className="card-header">
+            <h3>Email Activity</h3>
+            <span className="view-all">Last 5 sends</span>
+          </div>
+          <div className="applications-list">
+            {emailHistory.length === 0 ? (
+              <div className="application-item">
+                <div className="application-main">
+                  <div className="candidate-info">
+                    <h4>No emails yet</h4>
+                    <p>Use Contact Candidate to send tracked messages from the dashboard.</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              emailHistory.slice(0, 5).map((email) => (
+                <div key={email.id} className="application-item">
+                  <div className="application-main">
+                    <div className="candidate-info">
+                      <h4>{email.recipientName || email.recipientEmail}</h4>
+                      <p>{email.subject}</p>
+                      <span className="job-title">{email.recipientEmail}</span>
+                    </div>
+                    <div className="application-meta">
+                      <span className={`evw-badge ${email.status === 'sent' ? 'evw-badge-hired' : email.status === 'simulated' ? 'evw-badge-interview' : 'evw-badge-rejected'}`}>
+                        {email.status}
+                      </span>
+                      <span className="application-date">
+                        {new Date(email.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

@@ -14,5 +14,14 @@ export const config = {
     user: process.env.MYSQL_USER || 'root',
     password: process.env.MYSQL_PASSWORD || 'wesly8143',
     database: process.env.MYSQL_DATABASE || 'payout_portal'
+  },
+  smtp: {
+    host: process.env.SMTP_HOST || '',
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true',
+    user: process.env.SMTP_USER || '',
+    password: process.env.SMTP_PASSWORD || '',
+    fromEmail: process.env.SMTP_FROM_EMAIL || '',
+    fromName: process.env.SMTP_FROM_NAME || 'Payout Talent Team'
   }
 };

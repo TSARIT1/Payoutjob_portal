@@ -114,6 +114,16 @@ export async function updateEmployerApplication(applicationId, payload) {
   return response.data;
 }
 
+export async function fetchEmployerEmailHistory() {
+  const response = await API.get('/employer/email-history');
+  return response.data;
+}
+
+export async function sendEmployerEmail(payload) {
+  const response = await API.post('/employer/send-email', payload);
+  return response.data;
+}
+
 export const StudentRegister = registerStudent;
 export const StudentLogin = (data) => loginUser({ ...data, role: 'Student' });
 export const OtpVerification = async () => ({ success: true });

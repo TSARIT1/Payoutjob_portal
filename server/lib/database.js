@@ -115,6 +115,25 @@ async function createSchema() {
       CONSTRAINT fk_applications_student FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+
+  await query(`
+    CREATE TABLE IF NOT EXISTS email_messages (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      employer_id INT NOT NULL,
+      application_id INT DEFAULT NULL,
+      recipient_email VARCHAR(180) NOT NULL,
+      recipient_name VARCHAR(180) DEFAULT '',
+      subject VARCHAR(255) NOT NULL,
+      body_text LONGTEXT NOT NULL,
+      template_key VARCHAR(80) DEFAULT NULL,
+      status ENUM('sent', 'simulated', 'failed') DEFAULT 'simulated',
+      provider_message_id VARCHAR(255) DEFAULT NULL,
+      provider_response TEXT DEFAULT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      CONSTRAINT fk_email_messages_employer FOREIGN KEY (employer_id) REFERENCES users(id) ON DELETE CASCADE,
+      CONSTRAINT fk_email_messages_application FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE SET NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
 }
 
 async function seedDatabase() {
