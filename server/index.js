@@ -1133,6 +1133,73 @@ app.patch('/api/employer/applications/:applicationId', authRequired(['Employer']
   res.json({ message: 'Application updated successfully.' });
 }));
 
+app.get('/api/employer/integration', authRequired(['Employer']), asyncRoute(async (req, res) => {
+  const externalPosts = await query(
+    `SELECT id, action_type, details_json, created_at
+     FROM activity_logs
+     WHERE user_id = ? AND source = 'external-api'
+     ORDER BY created_at DESC
+     LIMIT 30`,
+    [req.authUser.id]
+  );
+
+  const docs = {
+    endpoint: '/api/external/employer/jobs',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-employer-api-key': req.authUser.externalApiKey || ''
+    },
+    sampleBody: {
+      title: 'Senior Frontend Engineer',
+      department: 'Engineering',
+      location: 'Bangalore, India',
+      type: 'Full-time',
+      status: 'active',
+      salary: '₹18 LPA - ₹24 LPA',
+      experience: '3-6 years',
+      description: 'Build modern hiring products.',
+      requirements: 'React, TypeScript, API integration'
+    }
+  };
+
+  res.json({
+    integration: {
+      companyName: req.authUser.companyName,
+      companySlug: req.authUser.companySlug,
+      onboardingStatus: req.authUser.onboardingStatus,
+      externalApiKey: req.authUser.externalApiKey || '',
+      baseUrl: `http://localhost:${config.port}`
+    },
+    externalPosts: externalPosts.map((entry) => ({
+      id: entry.id,
+      actionType: entry.action_type,
+      details: parseJson(entry.details_json, {}),
+      createdAt: entry.created_at
+    })),
+    docs
+  });
+}));
+
+app.post('/api/employer/integration/regenerate-key', authRequired(['Employer']), asyncRoute(async (req, res) => {
+  const nextKey = generateEmployerApiKey();
+  await query(
+    `UPDATE users
+     SET external_api_key = ?
+     WHERE id = ? AND role = 'Employer'`,
+    [nextKey, req.authUser.id]
+  );
+
+  await logActivity({
+    userId: req.authUser.id,
+    userRole: req.authUser.role,
+    actionType: 'employer.regenerate_external_api_key',
+    details: { rotatedAt: new Date().toISOString() }
+  });
+
+  res.json({ message: 'External API key regenerated successfully.', externalApiKey: nextKey });
+}));
+
 app.post('/api/ai/job-posting', authRequired(['Employer']), asyncRoute(async (req, res) => {
   const draft = buildJobPostingDraft(req.body || {});
   res.json({ draft });

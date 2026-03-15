@@ -5,6 +5,7 @@ import Jobs from './components/jobs';
 import ApplicationsTab from './components/Applications';
 import Candidates from './components/Candidates';
 import OverviewTab from './components/OverviewTab';
+import Integrations from './components/Integrations';
 import AssistantChat from '../components/AssistantChat';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -12,6 +13,8 @@ import {
   deleteEmployerJob,
   fetchEmployerDashboard,
   fetchEmployerEmailHistory,
+  fetchEmployerIntegration,
+  regenerateEmployerApiKey,
   sendEmployerEmail,
   updateEmployerApplication,
   updateEmployerJob
@@ -98,6 +101,9 @@ const JobDashboard = () => {
   });
   const [emailStatus, setEmailStatus] = useState({ type: '', message: '' });
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [integrationData, setIntegrationData] = useState({ integration: {}, docs: {}, externalPosts: [] });
+  const [showApiSecret, setShowApiSecret] = useState(false);
+  const [isRegeneratingApiKey, setIsRegeneratingApiKey] = useState(false);
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -121,6 +127,19 @@ const JobDashboard = () => {
     };
 
     loadDashboard();
+  }, []);
+
+  useEffect(() => {
+    const loadIntegration = async () => {
+      try {
+        const data = await fetchEmployerIntegration();
+        setIntegrationData(data || { integration: {}, docs: {}, externalPosts: [] });
+      } catch (error) {
+        console.error('Failed to load employer integration:', error);
+      }
+    };
+
+    loadIntegration();
   }, []);
 
   useEffect(() => {
@@ -408,6 +427,28 @@ const handleLogout = () => {
     setActiveStatCard(null);
   };
 
+  const handleRegenerateApiKey = async () => {
+    const confirmed = window.confirm('Regenerating key will invalidate old integrations. Continue?');
+    if (!confirmed) return;
+
+    setIsRegeneratingApiKey(true);
+    try {
+      const data = await regenerateEmployerApiKey();
+      setIntegrationData((prev) => ({
+        ...prev,
+        integration: {
+          ...(prev.integration || {}),
+          externalApiKey: data.externalApiKey
+        }
+      }));
+      alert('External API key regenerated successfully. Update your website integration header.');
+    } catch (error) {
+      alert(error?.response?.data?.error || 'Unable to regenerate key.');
+    } finally {
+      setIsRegeneratingApiKey(false);
+    }
+  };
+
   const handleJobFilterChange = (value) => {
     setJobStatusFilter(value);
     setActiveStatCard(null);
@@ -520,6 +561,16 @@ const handleLogout = () => {
               <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="currentColor"/>
             </svg>
             Candidates
+          </button>
+          <button
+            className={`nav-btn ${activeTab === 'integrations' ? 'active' : ''}`}
+            onClick={() => handleTabChange('integrations')}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M7 7h10v10H7z" stroke="currentColor" strokeWidth="2" />
+              <path d="M3 12h4M17 12h4M12 3v4M12 17v4" stroke="currentColor" strokeWidth="2" />
+            </svg>
+            Integrations
           </button>
 
           <button className="logout-btn" onClick={handleLogout}>
@@ -668,6 +719,18 @@ const handleLogout = () => {
               statusFilter={candidateStatusFilter}
               onContactCandidate={handleCandidateContact}
               onViewResume={handleCandidateViewResume}
+            />
+          )}
+
+          {activeTab === 'integrations' && (
+            <Integrations
+              integration={integrationData.integration}
+              docs={integrationData.docs}
+              externalPosts={integrationData.externalPosts}
+              showSecret={showApiSecret}
+              onToggleSecret={() => setShowApiSecret((prev) => !prev)}
+              onRegenerate={handleRegenerateApiKey}
+              isRegenerating={isRegeneratingApiKey}
             />
           )}
         </div>

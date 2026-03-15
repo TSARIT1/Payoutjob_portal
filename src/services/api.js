@@ -119,6 +119,16 @@ export async function fetchEmployerEmailHistory() {
   return response.data;
 }
 
+export async function fetchEmployerIntegration() {
+  const response = await API.get('/employer/integration');
+  return response.data;
+}
+
+export async function regenerateEmployerApiKey() {
+  const response = await API.post('/employer/integration/regenerate-key');
+  return response.data;
+}
+
 export async function sendEmployerEmail(payload) {
   const response = await API.post('/employer/send-email', payload);
   return response.data;
