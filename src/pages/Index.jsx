@@ -17,9 +17,13 @@ import {
   FaBullhorn,
   FaGooglePlay,
   FaApple,
-  FaAndroid
+  FaAndroid,
+  FaGlobe,
+  FaBriefcaseMedical,
+  FaIndustry,
+  FaTruck,
+  FaStore
 } from 'react-icons/fa';
-import { GrOracle } from "react-icons/gr";
 import './home.css'
 import ImageCarousel from "./components/CompanySlider";
 import Navbar from "./components/Navbar";
@@ -72,7 +76,7 @@ const Index = () => {
     },
     {
       question: "What types of jobs are available on PayoutJob?",
-      answer: "We list opportunities across various industries including technology, finance, healthcare, marketing, and more. You can filter jobs by category, location, salary range, and job type to find the perfect match."
+      answer: "We support opportunities across technology, healthcare, finance, retail, logistics, manufacturing, hospitality, education, operations, creative, and many other sectors. You can filter jobs by category, location, salary range, and job type to find the right match."
     }
   ];
 
@@ -80,15 +84,15 @@ const Index = () => {
 
   const data = {
     Skills: [
-      'Python', 'Sql', 'Java', 'AWS', 'Javascript', 'Git', 'Excel', 'Azure',
-      'Docker', 'Kubernetes', 'Sales', 'Data Analysis', 'Ms Office',
-      'CSS', 'HTML', 'Jenkins', 'Project Management', 'Gcp', 'Linux', 'React'
+      'Project Management', 'Operations', 'Accounting', 'Nursing', 'Sales',
+      'Supply Chain', 'Digital Marketing', 'Customer Support', 'Teaching', 'Human Resources',
+      'Excel', 'Data Analysis', 'Java', 'Python', 'AWS', 'Communication'
     ],
-    Location: ['Remote', 'Bangalore', 'Hyderabad', 'Mumbai', 'Chennai'],
-    Industry: ['IT', 'Healthcare', 'Finance', 'Education', 'E-commerce'],
-    Functions: ['Engineering', 'Sales', 'Marketing', 'HR', 'Support'],
-    Roles: ['Frontend Developer', 'Backend Developer', 'Project Manager', 'DevOps Engineer'],
-    Company: ['Google', 'Amazon', 'Infosys', 'TCS', 'Accenture'],
+    Location: ['Remote', 'Bangalore', 'Dubai', 'Singapore', 'London'],
+    Industry: ['Healthcare', 'Finance', 'Retail', 'Manufacturing', 'Education'],
+    Functions: ['Operations', 'Sales', 'Marketing', 'HR', 'Support'],
+    Roles: ['Nurse', 'Accountant', 'Store Manager', 'Operations Executive', 'Customer Success Manager'],
+    Company: ['Unilever', 'Amazon', 'HSBC', 'Accenture', 'Tata Group'],
   };
 
 
@@ -118,12 +122,29 @@ const popular = [
   { name: 'Accounting', icon: <FaFileInvoiceDollar /> },
   { name: 'Customer Support', icon: <FaHeadset /> },
   { name: 'Event Management', icon: <FaCalendarAlt /> },
-  { name: 'IT', icon: <FaLaptopCode /> },
-  { name: 'SQL', icon: <FaDatabase /> },
-  { name: 'Oracle', icon: <GrOracle /> },
+  { name: 'Healthcare', icon: <FaBriefcaseMedical /> },
+  { name: 'Manufacturing', icon: <FaIndustry /> },
+  { name: 'Logistics', icon: <FaTruck /> },
   { name: 'Graphic Design', icon: <FaPaintBrush /> },
   { name: 'Digital Marketing', icon: <FaBullhorn /> },
+  { name: 'Retail', icon: <FaStore /> },
 ]
+
+  const sectorSpotlights = [
+    { title: 'Healthcare & Life Sciences', text: 'Clinical, pharmacy, diagnostics, wellness, and hospital operations roles.' },
+    { title: 'Finance, Banking & Insurance', text: 'Banking operations, audit, finance, compliance, risk, and insurance careers.' },
+    { title: 'Retail, E-commerce & FMCG', text: 'Store operations, merchandising, supply chain, sales, and customer growth jobs.' },
+    { title: 'Manufacturing & Logistics', text: 'Plant operations, procurement, warehouse, transportation, and distribution roles.' },
+    { title: 'Education, Public Sector & Services', text: 'Teaching, administration, skilling, outreach, support, and governance jobs.' },
+    { title: 'Technology & Digital', text: 'Engineering, product, data, design, digital marketing, and analytics opportunities.' }
+  ];
+
+  const globalReach = [
+    'Built for India, Middle East, Southeast Asia, Europe, and remote-first hiring markets',
+    'Supports onsite, hybrid, remote, freelance, contract, part-time, and full-time jobs',
+    'Works for MNCs, startups, MSMEs, public sector teams, agencies, and enterprises',
+    'Suitable for entry-level, experienced, leadership, skilled-trade, and specialist hiring'
+  ];
 
   const appSupportCards = [
     {
@@ -151,7 +172,7 @@ const popular = [
   ];
 
   useEffect(() => {
-    document.title = 'PayoutJob - Free Job Seeker & Employer Portal | AI Hiring Platform';
+    document.title = 'PayoutJob - Global Job Portal For All Sectors | Job Seekers & Employers';
 
     const ensureMeta = (name, content, attr = 'name') => {
       let tag = document.head.querySelector(`meta[${attr}="${name}"]`);
@@ -165,26 +186,26 @@ const popular = [
 
     ensureMeta(
       'description',
-      'PayoutJob is a free portal for job seekers and employers with AI resume tools, job posting workflows, MNC hiring access, and mobile-ready experience.'
+      'PayoutJob is a global job portal for all sectors with free employer onboarding, multi-industry hiring, AI tools, and opportunities across healthcare, finance, retail, logistics, technology, education, manufacturing, and more.'
     );
     ensureMeta(
       'keywords',
-      'job portal, free job portal, free employer job posting, job seeker platform, AI hiring tools, MNC jobs, recruiter dashboard, resume enhancer'
+      'global job portal, all sector jobs, healthcare jobs, finance jobs, retail jobs, logistics jobs, manufacturing jobs, education jobs, remote jobs, free employer job posting'
     );
     ensureMeta('robots', 'index, follow, max-image-preview:large');
-    ensureMeta('og:title', 'PayoutJob - Free Job Seeker & Employer Portal', 'property');
+    ensureMeta('og:title', 'PayoutJob - Global Job Portal For All Sectors', 'property');
     ensureMeta(
       'og:description',
-      'Discover MNC jobs, post jobs for free, and use AI-powered hiring and resume tools on PayoutJob.',
+      'Discover jobs across all sectors worldwide, promote openings, and use AI-powered hiring tools on PayoutJob.',
       'property'
     );
     ensureMeta('og:type', 'website', 'property');
     ensureMeta('og:url', window.location.href, 'property');
     ensureMeta('twitter:card', 'summary_large_image');
-    ensureMeta('twitter:title', 'PayoutJob - Free Job Seeker & Employer Portal');
+    ensureMeta('twitter:title', 'PayoutJob - Global Job Portal For All Sectors');
     ensureMeta(
       'twitter:description',
-      'Free job portal with AI workflows for job seekers and employers.'
+      'Global job portal for all sectors with AI workflows for job seekers and employers.'
     );
 
     let canonical = document.head.querySelector('link[rel="canonical"]');
@@ -200,7 +221,7 @@ const popular = [
       '@type': 'WebSite',
       name: 'PayoutJob',
       url: window.location.origin,
-      description: 'Free job seeker and employer portal with AI-powered hiring workflow.',
+      description: 'Global job portal for all sectors with AI-powered hiring workflow and free employer onboarding.',
       potentialAction: {
         '@type': 'SearchAction',
         target: `${window.location.origin}/job?skills={search_term_string}`,
@@ -309,6 +330,38 @@ const popular = [
           <h3>{t('home.benefit3Title')}</h3>
           <p>{t('home.benefit3Text')}</p>
         </article>
+      </section>
+
+      <section className="sector-showcase container">
+        <div className="section-copy">
+          <p className="section-eyebrow">All Sectors Supported</p>
+          <h2>Not only IT. Built for every major industry.</h2>
+          <p>PayoutJob supports hiring and job discovery across healthcare, finance, retail, education, logistics, manufacturing, hospitality, public services, operations, and digital roles worldwide.</p>
+        </div>
+        <div className="sector-grid">
+          {sectorSpotlights.map((sector) => (
+            <article className="sector-card" key={sector.title}>
+              <h3>{sector.title}</h3>
+              <p>{sector.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="global-reach container">
+        <div className="section-copy">
+          <p className="section-eyebrow">Global Ready</p>
+          <h2>Built for global hiring requirements</h2>
+          <p>From local hiring in India to international and remote recruitment, the platform is positioned for worldwide job promotion, sector diversity, and scalable employer adoption.</p>
+        </div>
+        <div className="global-reach-card">
+          <div className="global-reach-icon"><FaGlobe /></div>
+          <ul>
+            {globalReach.map((item) => (
+              <li key={item}><FiCheckCircle /> {item}</li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       <section className="company-showcase container">

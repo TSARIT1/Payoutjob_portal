@@ -18,7 +18,7 @@ const translations = {
     home: {
       heroKicker: 'Free For Job Seekers And Employers',
       heroTitle: 'Build a smarter hiring workflow with',
-      heroBody: 'Beautiful and professional job discovery with AI-assisted tools, recruiter dashboards, and smooth mobile-ready workflows.',
+      heroBody: 'Beautiful and professional job discovery for global hiring across all sectors with AI-assisted tools, recruiter dashboards, and smooth mobile-ready workflows.',
       browseJobs: 'Browse Jobs',
       exploreAi: 'Explore AI Tools',
       statsTitle: 'Professional + Smooth',

@@ -543,12 +543,15 @@ const JobPortal = () => {
   ];
 
   const industryOptions = [
-    { id: 'it', label: 'IT & Services', count: 112 },
-    { id: 'fintech', label: 'FinTech', count: 38 },
-    { id: 'edtech', label: 'EdTech', count: 24 },
-    { id: 'health', label: 'Healthcare', count: 31 },
-    { id: 'ecomm', label: 'E-commerce', count: 46 },
-    { id: 'manufacturing', label: 'Manufacturing', count: 29 }
+    { id: 'technology', label: 'Technology & Digital', count: 112 },
+    { id: 'finance', label: 'Finance & Banking', count: 74 },
+    { id: 'healthcare', label: 'Healthcare & Life Sciences', count: 63 },
+    { id: 'retail', label: 'Retail & E-commerce', count: 58 },
+    { id: 'manufacturing', label: 'Manufacturing & Industrial', count: 49 },
+    { id: 'logistics', label: 'Logistics & Supply Chain', count: 43 },
+    { id: 'education', label: 'Education & Training', count: 36 },
+    { id: 'hospitality', label: 'Hospitality & Travel', count: 27 },
+    { id: 'public-services', label: 'Public Sector & Services', count: 19 }
   ];
 
   const indianLocations = [

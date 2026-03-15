@@ -207,14 +207,16 @@ const EmpWelcome = () => {
                     <label className="emp-label">Industry</label>
                     <select name="industry" value={onboard.industry} onChange={handleChange} className="emp-input">
                       <option value="">Select industry</option>
-                      <option value="Banking">Banking</option>
-                      <option value="IT">IT</option>
-                      <option value="Finance">Finance</option>
-                      <option value="Health care & Pharmaceuticals">Health care & Pharmaceuticals</option>
-                      <option value="Education & EdTech">Education & EdTech</option>
-                      <option value="Hospitality & Tourism">Hospitality & Tourism</option>
-                      <option value="Transportation & Supply Chain">Transportation & Supply Chain</option>
-                      <option value="Human Resource">Human Resource</option>
+                      <option value="Technology & Digital">Technology & Digital</option>
+                      <option value="Finance & Banking">Finance & Banking</option>
+                      <option value="Healthcare & Life Sciences">Healthcare & Life Sciences</option>
+                      <option value="Retail & E-commerce">Retail & E-commerce</option>
+                      <option value="Manufacturing & Industrial">Manufacturing & Industrial</option>
+                      <option value="Logistics & Supply Chain">Logistics & Supply Chain</option>
+                      <option value="Education & Training">Education & Training</option>
+                      <option value="Hospitality & Travel">Hospitality & Travel</option>
+                      <option value="Human Resources & Staffing">Human Resources & Staffing</option>
+                      <option value="Public Sector & Services">Public Sector & Services</option>
                     </select>
                   </div>
 

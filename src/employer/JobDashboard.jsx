@@ -808,11 +808,15 @@ const handleLogout = () => {
                         <div className="form-grid" style={{marginTop:8}}>
                           <select className="company-input" value={employerProfile.industry} onChange={(e)=>setEmployerProfile(prev=>({...prev,industry:e.target.value}))}>
                             <option value="">Industry</option>
-                            <option>IT</option>
-                            <option>Healthcare</option>
-                            <option>Finance</option>
-                            <option>Education</option>
-                            <option>Manufacturing</option>
+                            <option>Technology & Digital</option>
+                            <option>Finance & Banking</option>
+                            <option>Healthcare & Life Sciences</option>
+                            <option>Retail & E-commerce</option>
+                            <option>Manufacturing & Industrial</option>
+                            <option>Logistics & Supply Chain</option>
+                            <option>Education & Training</option>
+                            <option>Hospitality & Travel</option>
+                            <option>Public Sector & Services</option>
                             <option>Other</option>
                           </select>
                           <input className="company-input" placeholder="Company Type (Startup, MNC, Agency)" value={employerProfile.companyType} onChange={(e)=>setEmployerProfile(prev=>({...prev,companyType:e.target.value}))} />
