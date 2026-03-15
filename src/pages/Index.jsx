@@ -1,20 +1,36 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { IoIosSearch } from "react-icons/io";
 import { IoLocationOutline } from "react-icons/io5";
 import { MdWorkOutline } from "react-icons/md";
 import { motion } from 'framer-motion';
-import { FaUniversity, FaHome, FaUsers, FaChartLine, FaFileInvoiceDollar, FaHeadset, FaCalendarAlt, FaLaptopCode, FaDatabase,  FaPaintBrush, FaBullhorn } from 'react-icons/fa';
+import {
+  FaUniversity,
+  FaHome,
+  FaUsers,
+  FaChartLine,
+  FaFileInvoiceDollar,
+  FaHeadset,
+  FaCalendarAlt,
+  FaLaptopCode,
+  FaDatabase,
+  FaPaintBrush,
+  FaBullhorn,
+  FaGooglePlay,
+  FaApple,
+  FaAndroid
+} from 'react-icons/fa';
 import { GrOracle } from "react-icons/gr";
 import './home.css'
 import ImageCarousel from "./components/CompanySlider";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiCheckCircle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Index = () => {
 
   const [activeIndex, setActiveIndex] = useState(null);
+  const [searchForm, setSearchForm] = useState({ skills: '', location: '', experience: '' });
   const navigate = useNavigate();
 
   const toggleFAQ = (index) => {
@@ -22,13 +38,9 @@ const Index = () => {
   };
 
   const handleSearch = () => {
-    const skillsInput = document.querySelector('input[name="skills"]');
-    const locationInput = document.querySelector('input[name="location"]');
-    const experienceInput = document.querySelector('input[name="experience"]');
-
-    const skills = skillsInput?.value || '';
-    const location = locationInput?.value || '';
-    const experience = experienceInput?.value || '';
+    const skills = searchForm.skills.trim();
+    const location = searchForm.location.trim();
+    const experience = searchForm.experience.trim();
 
     let queryParams = [];
     if (skills) queryParams.push(`skills=${encodeURIComponent(skills)}`);
@@ -65,46 +77,35 @@ const Index = () => {
 
 
   const data = {
-  Skills: [
-    'Python', 'Sql', 'Java', 'AWS', 'Javascript', 'Git', 'Excel', 'Azure',
-    'Docker', 'Kubernetes', 'Sales', 'Data Analysis', 'Ms Office',
-    'CSS', 'HTML', 'Jenkins', 'Project Management', 'Gcp', 'Linux', 'React'
-  ],
-  Location: ['Remote', 'Bangalore', 'Hyderabad', 'Mumbai', 'Chennai'],
-  Industry: ['IT', 'Healthcare', 'Finance', 'Education', 'E-commerce'],
-  Functions: ['Engineering', 'Sales', 'Marketing', 'HR', 'Support'],
-  Roles: ['Frontend Developer', 'Backend Developer', 'Project Manager', 'DevOps Engineer'],
-  Company: ['Google', 'Amazon', 'Infosys', 'TCS', 'Accenture'],
-};
+    Skills: [
+      'Python', 'Sql', 'Java', 'AWS', 'Javascript', 'Git', 'Excel', 'Azure',
+      'Docker', 'Kubernetes', 'Sales', 'Data Analysis', 'Ms Office',
+      'CSS', 'HTML', 'Jenkins', 'Project Management', 'Gcp', 'Linux', 'React'
+    ],
+    Location: ['Remote', 'Bangalore', 'Hyderabad', 'Mumbai', 'Chennai'],
+    Industry: ['IT', 'Healthcare', 'Finance', 'Education', 'E-commerce'],
+    Functions: ['Engineering', 'Sales', 'Marketing', 'HR', 'Support'],
+    Roles: ['Frontend Developer', 'Backend Developer', 'Project Manager', 'DevOps Engineer'],
+    Company: ['Google', 'Amazon', 'Infosys', 'TCS', 'Accenture'],
+  };
 
 
 const [activeCategory, setActiveCategory] = useState('Skills');
 
-
-   const servicesCompanyLogos = [
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSupyFRhX2LJ5AwZkx8Q1BJx62R6BnpOG4F4w&s",  //microsoft
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWoGbcL2aKMrpLeMrSbDOXs4sGXDZQm3osOA&s",
-  "https://www.3ds.com/fileadmin/depositary/alliances/CRM_SITELOGO/20201200/100000000003019_1wipro-logo-digital-rgb.png",
-  "https://w7.pngwing.com/pngs/898/916/png-transparent-oracle-corporation-logo-computer-software-business-company-logo-miscellaneous-angle-company.png",
-  "https://img.favpng.com/15/5/15/ibm-logo-png-favpng-phEGANqnq0caSRVx94UXGLgqU.jpg",
- "https://img.favpng.com/17/9/8/laptop-lenovo-logo-inteconnex-computer-software-png-favpng-J926mJSX94aTKr0Bv3Qr5wi3H.jpg",
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Infosys_BPM_Logo.svg/430px-Infosys_BPM_Logo.svg.png",
-  "https://w7.pngwing.com/pngs/176/854/png-transparent-dell-laptop-logo-brand-printer-software-branding-blue-angle-text-thumbnail.png",
-  "https://img.favpng.com/24/1/24/tibco-software-spotfire-computer-software-business-intelligence-png-favpng-WF5w6X0WusMXypw6uAtSrAXu4.jpg",
-
-  "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
-  "https://w7.pngwing.com/pngs/772/151/png-transparent-blender-logo-tech-companies-thumbnail.png",
-  "https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-google-sva-scholarship-20.png",
-  "https://e7.pngegg.com/pngimages/769/65/png-clipart-salesforce-com-organization-customer-relationship-management-logo-siebel-systems-business-love-blue.png",
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfMOnJ1LiORppUWyiROwTOHL2vhbNdQQA55A&sg",
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxZSMo7cDUX38y07l0DctP1IehaAmF5qETxA&s",
-  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Meta-Logo.png/2560px-Meta-Logo.png",
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiJ2AlJYe7dz3rxlLOeAi71ZneEQA81P2jng&s",
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Omega_Logo.svg/1280px-Omega_Logo.svg.png",
-    
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTPAWYqoR1E-YMPwd869I0X2WuToOjTrPXgQ&s",
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Accenture.svg/2560px-Accenture.svg.png"
-   ]
+  const servicesCompanyLogos = useMemo(() => ([
+    { name: 'Microsoft', src: 'https://logo.clearbit.com/microsoft.com' },
+    { name: 'Google', src: 'https://logo.clearbit.com/google.com' },
+    { name: 'Amazon', src: 'https://logo.clearbit.com/amazon.com' },
+    { name: 'Meta', src: 'https://logo.clearbit.com/meta.com' },
+    { name: 'Oracle', src: 'https://logo.clearbit.com/oracle.com' },
+    { name: 'IBM', src: 'https://logo.clearbit.com/ibm.com' },
+    { name: 'Accenture', src: 'https://logo.clearbit.com/accenture.com' },
+    { name: 'Infosys', src: 'https://logo.clearbit.com/infosys.com' },
+    { name: 'TCS', src: 'https://logo.clearbit.com/tcs.com' },
+    { name: 'Wipro', src: 'https://logo.clearbit.com/wipro.com' },
+    { name: 'Salesforce', src: 'https://logo.clearbit.com/salesforce.com' },
+    { name: 'Adobe', src: 'https://logo.clearbit.com/adobe.com' }
+  ]), []);
 
 
 const popular = [
@@ -122,50 +123,130 @@ const popular = [
   { name: 'Digital Marketing', icon: <FaBullhorn /> },
 ]
 
+  const appSupportCards = [
+    {
+      title: 'Play Store Experience',
+      icon: <FaGooglePlay />,
+      text: 'Android users can search jobs, track applications, and get AI career insights from a responsive mobile-first flow.'
+    },
+    {
+      title: 'iOS Optimized Flow',
+      icon: <FaApple />,
+      text: 'Designed for iPhone and iPad with smooth layouts, lightweight interactions, and clear recruiter communication paths.'
+    },
+    {
+      title: 'Android Support',
+      icon: <FaAndroid />,
+      text: 'Fast loading cards and optimized assets ensure consistent performance across Android devices and network conditions.'
+    }
+  ];
+
+  const workflowSteps = [
+    { title: 'Create Free Profile', detail: 'Set up your seeker or employer profile in minutes and unlock dashboard workflows.' },
+    { title: 'Discover MNC Jobs', detail: 'Search by skills, city, role, and category to discover relevant opportunities quickly.' },
+    { title: 'Apply with AI Tools', detail: 'Use autofill, CV enhancement, and tailored recommendations for better application quality.' },
+    { title: 'Track and Grow', detail: 'Monitor status updates, recruiter messages, and referral actions from one central portal.' }
+  ];
+
   return (
     <>
     <Navbar />
     <div className="home-page">
-
-        <section className="hero-section">
-          <div className="container">
-            <motion.div  className="hero-content">
-              <h1>Find Your <span>Dream Job</span> Today</h1>
-              <p>Thousands of jobs in the computer, engineering and technology sectors are waiting for you.</p>
-            </motion.div>
-          </div>
-        </section>
-      
-    </div>
+      <section className="hero-section">
+        <div className="container hero-grid">
+          <motion.div className="hero-content" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
+            <p className="hero-kicker">Free Career Portal</p>
+            <h1>Build a smarter hiring workflow with <span>PayoutJob</span></h1>
+            <p>
+              Beautiful and professional job discovery with AI-assisted tools, recruiter dashboards, and smooth mobile-ready workflows.
+            </p>
+            <div className="hero-cta">
+              <Link className="hero-btn primary" to="/job">Browse Jobs</Link>
+              <Link className="hero-btn secondary" to="/ai-tools">Explore AI Tools</Link>
+            </div>
+          </motion.div>
+          <motion.div className="hero-stat-card" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.08 }}>
+            <h3>Professional + Smooth</h3>
+            <div className="stat-list">
+              <div><strong>50K+</strong><span>Active candidates</span></div>
+              <div><strong>2.5K+</strong><span>Open roles</span></div>
+              <div><strong>900+</strong><span>Hiring companies</span></div>
+            </div>
+            <p>Designed for both job seekers and employers with polished UI cards, clear actions, and reliable performance.</p>
+          </motion.div>
+        </div>
+      </section>
 
       <div className="container-main">
         <div className="search-containe">
           <div className="box-inputs">
-            <label htmlFor="" className="group ">
-             <IoIosSearch className="icon text-zinc-700"/>  <input type="text" name="skills" className="sr-input w-sm" placeholder="Search By Skills or Any Company..." />
+            <label htmlFor="skills" className="group">
+              <IoIosSearch className="icon text-zinc-700" />
+              <input
+                id="skills"
+                type="text"
+                name="skills"
+                value={searchForm.skills}
+                onChange={(e) => setSearchForm((prev) => ({ ...prev, skills: e.target.value }))}
+                className="sr-input"
+                placeholder="Skills or company"
+              />
             </label>
-          <label htmlFor="" className="group">
-           <IoLocationOutline className="icon text-zinc-700"/> <input type="text" name="location" className="sr-input" placeholder="Search by location"/>
-          </label>
-            <label htmlFor="" className="group">
-            <MdWorkOutline className="icon text-zinc-700"/>  <input type="text" name="experience" className="sr-input" placeholder="Expirience"/>
+            <label htmlFor="location" className="group">
+              <IoLocationOutline className="icon text-zinc-700" />
+              <input
+                id="location"
+                type="text"
+                name="location"
+                value={searchForm.location}
+                onChange={(e) => setSearchForm((prev) => ({ ...prev, location: e.target.value }))}
+                className="sr-input"
+                placeholder="Location"
+              />
             </label>
-          <div className="box-btns">
-            <button className="buttton-search bg-blue-600 hover:bg-blue-500 cursor-pointer text-amber-50 p-3" onClick={handleSearch}>Search</button>
-          </div>
+            <label htmlFor="experience" className="group">
+              <MdWorkOutline className="icon text-zinc-700" />
+              <input
+                id="experience"
+                type="text"
+                name="experience"
+                value={searchForm.experience}
+                onChange={(e) => setSearchForm((prev) => ({ ...prev, experience: e.target.value }))}
+                className="sr-input"
+                placeholder="Experience"
+              />
+            </label>
+            <div className="box-btns">
+              <button className="buttton-search bg-blue-600 hover:bg-blue-500 cursor-pointer text-amber-50 p-3" onClick={handleSearch}>Search Jobs</button>
+            </div>
           </div>
         </div>
       </div>
-      <div className="st-companies">
-        <h1 className="text-center text-2xl font-medium heading">Featured Companies</h1>
-        <div className="">
-   
-      <ImageCarousel images={servicesCompanyLogos} />
 
-     
-    </div>
-    
+      <section className="top-benefits container">
+        <article className="benefit-card">
+          <FiCheckCircle />
+          <h3>Free Portal Access</h3>
+          <p>Register and apply without subscription costs as a job seeker.</p>
+        </article>
+        <article className="benefit-card">
+          <FiCheckCircle />
+          <h3>Professional Recruiter Tools</h3>
+          <p>Employer dashboard includes job posts, applicant tracking, and communication.</p>
+        </article>
+        <article className="benefit-card">
+          <FiCheckCircle />
+          <h3>AI Enhanced Workflow</h3>
+          <p>Tailored resume support, CV checks, and referral insights built-in.</p>
+        </article>
+      </section>
+
+      <div className="st-companies container">
+        <h1 className="text-center text-2xl font-medium heading">Top MNC Companies Hiring Here</h1>
+        <ImageCarousel images={servicesCompanyLogos} />
       </div>
+    </div>
+
       <div className="p-category">
         <h1 className="text-center text-2xl font-medium heading">Popular Categories</h1>
         <div className="pc-main">
@@ -182,6 +263,38 @@ const popular = [
       }
         </div>
       </div>
+
+      <section className="workflow container">
+        <div className="workflow-head">
+          <h2>Smooth Job Workflow</h2>
+          <p>Move from search to hiring with a clean, guided, and professional process.</p>
+        </div>
+        <div className="workflow-grid">
+          {workflowSteps.map((step, index) => (
+            <article className="workflow-card" key={step.title}>
+              <span className="workflow-index">0{index + 1}</span>
+              <h3>{step.title}</h3>
+              <p>{step.detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="app-support container">
+        <div className="app-support-head">
+          <h2>Play Store, Android, and iOS Support</h2>
+          <p>Cross-platform ready UI experience for mobile users and recruiters on the go.</p>
+        </div>
+        <div className="app-support-grid">
+          {appSupportCards.map((card) => (
+            <article className="app-card" key={card.title}>
+              <span className="app-icon">{card.icon}</span>
+              <h3>{card.title}</h3>
+              <p>{card.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
 
 
 

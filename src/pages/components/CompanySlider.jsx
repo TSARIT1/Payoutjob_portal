@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -17,6 +17,37 @@ const PrevArrow = ({ onClick }) => (
   </button>
 );
 
+function LogoCard({ item, index }) {
+  const [isBroken, setIsBroken] = useState(false);
+  const name = typeof item === "string" ? `Company ${index + 1}` : item.name;
+  const src = typeof item === "string" ? item : item.src;
+  const initials = String(name || "CO")
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  if (isBroken || !src) {
+    return (
+      <div className="cs-fallback" title={name}>
+        <span>{initials}</span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      onError={() => setIsBroken(true)}
+      alt={name}
+      loading="lazy"
+      className="cs-image"
+      referrerPolicy="no-referrer"
+    />
+  );
+}
+
 const ImageCarousel = ({ images }) => {
   const settings = {
     dots: false,
@@ -29,6 +60,14 @@ const ImageCarousel = ({ images }) => {
     arrows: true,
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 1,
+        },
+      },
+    ],
   };
 
   const groupedImages = [];
@@ -44,12 +83,7 @@ const ImageCarousel = ({ images }) => {
             <div className="cs-image-grid">
               {group.map((img, i) => (
                 <div key={i} className="cs-image-wrapper">
-                  <img
-                    src={img}
-                    onError={(e) => (e.target.src = "/fallback.png")}
-                    alt={`Slide ${idx * 4 + i + 1}`}
-                    className="cs-image"
-                  />
+                  <LogoCard item={img} index={idx * 4 + i} />
                 </div>
               ))}
             </div>
