@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import EmpLogin from "./employer/auth/Login";
 import EmpRegister from "./employer/auth/Register";
@@ -27,7 +27,9 @@ import { useAuth } from "./contexts/AuthContext";
 
 function App() {
   const { user } = useAuth();
+  const location = useLocation();
   const assistantPersona = user?.role === "Employer" ? "recruiter" : "jobseeker";
+  const showFloatingAssistant = !location.pathname.startsWith('/profile') && !location.pathname.startsWith('/dashboard');
 
   return (
     <>
@@ -119,7 +121,7 @@ function App() {
           }
         />
       </Routes>
-      <AssistantChat userType={assistantPersona} />
+      {showFloatingAssistant && <AssistantChat userType={assistantPersona} />}
     </>
   );
 }

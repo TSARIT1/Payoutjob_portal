@@ -6,7 +6,7 @@ import ApplicationsTab from './components/Applications';
 import Candidates from './components/Candidates';
 import OverviewTab from './components/OverviewTab';
 import Integrations from './components/Integrations';
-import AssistantChat from '../components/AssistantChat';
+import InlineAIAssistant from '../components/InlineAIAssistant';
 import { useAuth } from '../contexts/AuthContext';
 import {
   createEmployerJob,
@@ -573,6 +573,16 @@ const handleLogout = () => {
             Integrations
           </button>
 
+          <button
+            className={`nav-btn ${activeTab === 'ai' ? 'active' : ''}`}
+            onClick={() => handleTabChange('ai')}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3l1.8 3.65L18 8.2l-3 2.9.7 4.1L12 13.2l-3.7 2 .7-4.1-3-2.9 4.2-.55L12 3z" fill="currentColor"/>
+            </svg>
+            AI Assistant
+          </button>
+
           <button className="logout-btn" onClick={handleLogout}>
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
       <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" fill="currentColor"/>
@@ -731,6 +741,14 @@ const handleLogout = () => {
               onToggleSecret={() => setShowApiSecret((prev) => !prev)}
               onRegenerate={handleRegenerateApiKey}
               isRegenerating={isRegeneratingApiKey}
+            />
+          )}
+
+          {activeTab === 'ai' && (
+            <InlineAIAssistant
+              userType="recruiter"
+              title="Recruiting Copilot"
+              subtitle="Get role-specific assistance for JD quality, screening decisions, and candidate communication."
             />
           )}
         </div>
@@ -1114,7 +1132,6 @@ const handleLogout = () => {
           </div>
         </div>
       )}
-      <AssistantChat userType="recruiter" />
     </div>
   );
 };

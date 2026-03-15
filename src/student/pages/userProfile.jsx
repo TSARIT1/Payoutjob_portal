@@ -14,6 +14,7 @@ import ProfileHeader from './UserProfileComponents/ProfileHeader';
 import Navbar from '../../pages/components/Navbar';
 import Footer from '../../pages/components/Footer';
 import { FiDownload, FiUpload } from 'react-icons/fi';
+import InlineAIAssistant from '../../components/InlineAIAssistant';
 
 const UserProfile = () => {
   const { user, updateProfile } = useAuth();
@@ -267,6 +268,12 @@ const UserProfile = () => {
             </div>
 
             <div className="profile-sections">
+              <InlineAIAssistant
+                userType="jobseeker"
+                title="Career Copilot"
+                subtitle="Get practical guidance for profile strength, resume impact, and application quality."
+              />
+
               <PersonalInfo
                 data={profileData.personalInfo}
                 onSave={(data) => handleSave('personalInfo', data)}
