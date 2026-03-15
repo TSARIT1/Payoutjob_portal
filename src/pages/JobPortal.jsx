@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import Navbar from './components/Navbar';
 import AssistantPopup from '../components/AssistantPopup';
 import { formatTimeAgo } from '../utils/timeAgo';
-import { applyToJob, fetchJobs, fetchMyApplications } from '../services/api';
+import { applyToJob, fetchJobs, fetchMyApplications, saveJob, unsaveJob, fetchSavedJobs, createJobAlert } from '../services/api';
 import './JobPortal.css';
 
 const MULTI_SELECT_FIELDS = [
@@ -111,6 +111,17 @@ const JobPortal = () => {
   }, [user]);
 
   useEffect(() => {
+    const loadSaved = async () => {
+      if (!user || user.role !== 'Student') { setSavedJobs(new Set()); return; }
+      try {
+        const data = await fetchSavedJobs();
+        setSavedJobs(new Set((data.jobs || []).map((j) => j.id)));
+      } catch { /* non-critical, keep empty set */ }
+    };
+    loadSaved();
+  }, [user]);
+
+  useEffect(() => {
     const wrapper = wrapperRef.current;
     
     const handleClickOutside = (event) => {
@@ -185,17 +196,24 @@ const JobPortal = () => {
     setAppliedFilters(searchQuery);
   };
 
-  const toggleSaveJob = (jobId, event) => {
+  const toggleSaveJob = async (jobId, event) => {
     event.stopPropagation();
+    if (!user) { navigate('/login'); return; }
+    const alreadySaved = savedJobs.has(jobId);
     setSavedJobs(prev => {
-      const newSaved = new Set(prev);
-      if (newSaved.has(jobId)) {
-        newSaved.delete(jobId);
-      } else {
-        newSaved.add(jobId);
-      }
-      return newSaved;
+      const n = new Set(prev);
+      if (alreadySaved) { n.delete(jobId); } else { n.add(jobId); }
+      return n;
     });
+    try {
+      if (alreadySaved) { await unsaveJob(jobId); } else { await saveJob(jobId); }
+    } catch {
+      setSavedJobs(prev => {
+        const n = new Set(prev);
+        if (alreadySaved) { n.add(jobId); } else { n.delete(jobId); }
+        return n;
+      });
+    }
   };
 
   const handleApplyJob = (jobId, event) => {
@@ -226,6 +244,18 @@ const JobPortal = () => {
     // Open assistant sidebar to collect additional application info
     setAssistantJob(job);
     setAssistantOpen(true);
+  };
+
+  const handleEasyApply = async (jobId, event) => {
+    event.stopPropagation();
+    if (!user) { navigate('/login'); return; }
+    if (appliedJobs.has(jobId)) return;
+    try {
+      await applyToJob(jobId, { candidateNote: 'Quick Apply via Easy Apply.', responses: null });
+      setAppliedJobs(prev => { const n = new Set(prev); n.add(jobId); return n; });
+    } catch (error) {
+      setExpModal({ open: true, title: 'Easy Apply failed', message: error?.response?.data?.error || 'Unable to submit your application.' });
+    }
   };
 
   const handleAssistantSubmit = async (jobId, responses, meta) => {
@@ -359,7 +389,7 @@ const JobPortal = () => {
     }
   }, [location.search]);
 
-  const handleJobAlertSubmit = (event) => {
+  const handleJobAlertSubmit = async (event) => {
     event.preventDefault();
     setJobAlertStatus({ message: '', type: '' });
 
@@ -373,10 +403,15 @@ const JobPortal = () => {
     }
 
     setIsSubmittingAlert(true);
-    setTimeout(() => {
+    try {
+      await createJobAlert({ keyword, email, frequency: jobAlertForm.frequency });
+      setJobAlertStatus({ message: `Alert created! You will receive ${jobAlertForm.frequency.toLowerCase()} alerts for "${keyword}".`, type: 'success' });
+      setJobAlertForm(prev => ({ ...prev, keyword: '', email: '' }));
+    } catch (err) {
+      setJobAlertStatus({ message: err?.response?.data?.error || 'Failed to create alert. Please try again.', type: 'error' });
+    } finally {
       setIsSubmittingAlert(false);
-      setJobAlertStatus({ message: `You will get ${jobAlertForm.frequency.toLowerCase()} alerts for ${keyword}.`, type: 'success' });
-    }, 600);
+    }
   };
 
   const toggleMultiSelect = (field, value) => {
@@ -612,6 +647,7 @@ const JobPortal = () => {
   const fallbackJobCards = [
     {
       id: 1,
+      featured: true,
       title: "UI / UX Designer",
       subtitle: "The User Experience Designer position .",
       salary: convertToINR(3000),
@@ -622,6 +658,7 @@ const JobPortal = () => {
     },
     {
       id: 2,
+      featured: true,
       title: "Sr. Product Designer",
       subtitle: "HITEC City, Hyderabad",
       salary: convertToINR(4000),
@@ -632,6 +669,7 @@ const JobPortal = () => {
     },
     {
       id: 3,
+      featured: true,
       title: "Frontend Engineer (React)",
       subtitle: "Koramangala, Bangalore",
       salary: convertToINR(3600),
@@ -1568,6 +1606,16 @@ const JobPortal = () => {
                     </div>
                     <div className="job-detail-buttons">
                       <button className="detail-button">{job.type}</button>
+                      {!appliedJobs.has(job.id) && (
+                        <button
+                          className="detail-button easy-apply-badge"
+                          onClick={(e) => handleEasyApply(job.id, e)}
+                          title="One-click apply with your saved profile"
+                        >
+                          ⚡ Easy Apply
+                        </button>
+                      )}
+                      {job.featured && <span className="featured-badge">⭐ Featured</span>}
                     </div>
                     <div className="job-card-buttons">
                       <button 

@@ -154,6 +154,77 @@ export async function getAiReferralInsights(payload) {
   return response.data;
 }
 
+  // ── Saved Jobs ──────────────────────────────────────────────────────────────
+  export async function fetchSavedJobs() {
+    const response = await API.get('/jobs/saved');
+    return response.data;
+  }
+
+  export async function saveJob(jobId) {
+    const response = await API.post(`/jobs/${jobId}/save`);
+    return response.data;
+  }
+
+  export async function unsaveJob(jobId) {
+    const response = await API.delete(`/jobs/${jobId}/save`);
+    return response.data;
+  }
+
+  // ── Job Alerts ───────────────────────────────────────────────────────────────
+  export async function fetchJobAlerts() {
+    const response = await API.get('/job-alerts');
+    return response.data;
+  }
+
+  export async function createJobAlert(payload) {
+    const response = await API.post('/job-alerts', payload);
+    return response.data;
+  }
+
+  export async function deleteJobAlert(alertId) {
+    const response = await API.delete(`/job-alerts/${alertId}`);
+    return response.data;
+  }
+
+  // ── Recommended Jobs ─────────────────────────────────────────────────────────
+  export async function fetchRecommendedJobs() {
+    const response = await API.get('/jobs/recommended');
+    return response.data;
+  }
+
+  // ── Blog Posts ───────────────────────────────────────────────────────────────
+  export async function fetchBlogPosts() {
+    const response = await API.get('/blog-posts');
+    return response.data;
+  }
+
+  export async function createBlogPost(payload) {
+    const response = await API.post('/blog-posts', payload);
+    return response.data;
+  }
+
+  // ── Notifications ────────────────────────────────────────────────────────────
+  export async function fetchNotifications() {
+    const response = await API.get('/notifications');
+    return response.data;
+  }
+
+  export async function markNotificationRead(notifId) {
+    const response = await API.patch(`/notifications/${notifId}/read`);
+    return response.data;
+  }
+
+  export async function markAllNotificationsRead() {
+    const response = await API.patch('/notifications/read-all');
+    return response.data;
+  }
+
+  // ── Employer: Candidate Search ───────────────────────────────────────────────
+  export async function fetchEmployerCandidates(params = {}) {
+    const response = await API.get('/employer/candidates', { params });
+    return response.data;
+  }
+
 export const StudentRegister = registerStudent;
 export const StudentLogin = (data) => loginUser({ ...data, role: 'Student' });
 export const OtpVerification = async () => ({ success: true });

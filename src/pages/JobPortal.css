@@ -1228,6 +1228,29 @@ body {
   box-shadow: 0 10px 22px rgba(79, 139, 255, 0.28);
 }
 
+  .detail-button.easy-apply-badge {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    box-shadow: 0 6px 16px rgba(34, 197, 94, 0.3);
+    cursor: pointer;
+  }
+
+  .dark-mode .detail-button.easy-apply-badge {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+  }
+
+  .featured-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.3);
+  }
+
 .job-card-buttons {
   display: flex;
   align-items: center;

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../../pages/components/Navbar';
 import Footer from '../../pages/components/Footer';
 import UserProfileSidebar from './UserProfileSidebar';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatTimeAgo } from '../../utils/timeAgo';
 import './Blogs.css';
+import { fetchBlogPosts, createBlogPost } from '../../services/api';
 
 const samplePosts = [
   {
@@ -55,7 +56,17 @@ const samplePosts = [
 
 export default function Blogs() {
   const { user } = useAuth();
-  const [posts, setPosts] = useState(samplePosts);
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    fetchBlogPosts()
+      .then((data) => {
+        const loaded = data.posts || [];
+        setPosts(loaded.length > 0 ? loaded : samplePosts);
+      })
+      .catch(() => setPosts(samplePosts))
+      .finally(() => {});
+  }, []);
   const [readPostIds, setReadPostIds] = useState(new Set());
   const [expandedPostIds, setExpandedPostIds] = useState(new Set());
 
@@ -96,27 +107,37 @@ export default function Blogs() {
     e.target.value = '';
   };
 
-  const handleSubmitPost = (e) => {
+  const handleSubmitPost = async (e) => {
     e.preventDefault();
     if (!newPost.title || !newPost.excerpt || !newPost.content) return;
-    const nextId = (posts[posts.length - 1]?.id || 0) + 1;
     const tagsArray = newPost.tags
       .split(',')
       .map((t) => t.trim())
       .filter(Boolean);
-    const post = {
-      id: nextId,
+    const optimisticPost = {
+      id: Date.now(),
       title: newPost.title,
       excerpt: newPost.excerpt,
       content: newPost.content,
-      author: 'You',
+      author: user?.name || 'You',
       publishedAt: new Date().toISOString(),
       tags: tagsArray,
       readTime: newPost.readTime || '3 min',
       image: newPost.image,
     };
-    setPosts((prev) => [post, ...prev]);
+    setPosts((prev) => [optimisticPost, ...prev]);
     setNewPost({ title: '', excerpt: '', content: '', tags: '', readTime: '3 min', image: null });
+    if (user) {
+      try {
+        await createBlogPost({
+          title: optimisticPost.title,
+          excerpt: optimisticPost.excerpt,
+          content: optimisticPost.content,
+          tags: tagsArray,
+          readTime: optimisticPost.readTime,
+        });
+      } catch { /* optimistic post stays visible; backend sync silently fails */ }
+    }
   };
 
   const deletePost = (id) => {

@@ -1153,6 +1153,200 @@ app.post('/ai/chat', asyncRoute(async (req, res) => {
   res.json({ reply });
 }));
 
+// ── Saved Jobs ──────────────────────────────────────────────────────────────
+app.get('/api/jobs/saved', authRequired(['Student']), asyncRoute(async (req, res) => {
+  const rows = await query(
+    `SELECT j.*, u.company_name, u.full_name AS employer_name, COUNT(a.id) AS applications
+     FROM saved_jobs sj
+     INNER JOIN jobs j ON j.id = sj.job_id
+     INNER JOIN users u ON u.id = j.employer_id
+     LEFT JOIN applications a ON a.job_id = j.id
+     WHERE sj.user_id = ? AND j.status = 'active'
+     GROUP BY j.id
+     ORDER BY sj.created_at DESC`,
+    [req.authUser.id]
+  );
+  res.json({ jobs: rows.map(mapJobRecord) });
+}));
+
+app.post('/api/jobs/:jobId/save', authRequired(['Student']), asyncRoute(async (req, res) => {
+  const jobId = Number(req.params.jobId);
+  const jobRows = await query('SELECT id FROM jobs WHERE id = ? LIMIT 1', [jobId]);
+  if (!jobRows[0]) return res.status(404).json({ error: 'Job not found.' });
+  await query(
+    'INSERT IGNORE INTO saved_jobs (user_id, job_id) VALUES (?, ?)',
+    [req.authUser.id, jobId]
+  );
+  res.json({ message: 'Job saved.' });
+}));
+
+app.delete('/api/jobs/:jobId/save', authRequired(['Student']), asyncRoute(async (req, res) => {
+  const jobId = Number(req.params.jobId);
+  await query('DELETE FROM saved_jobs WHERE user_id = ? AND job_id = ?', [req.authUser.id, jobId]);
+  res.json({ message: 'Job removed from saved.' });
+}));
+
+// ── Job Alerts ───────────────────────────────────────────────────────────────
+app.get('/api/job-alerts', authRequired(['Student']), asyncRoute(async (req, res) => {
+  const rows = await query(
+    'SELECT * FROM job_alerts WHERE user_id = ? ORDER BY created_at DESC',
+    [req.authUser.id]
+  );
+  res.json({ alerts: rows });
+}));
+
+app.post('/api/job-alerts', authRequired(['Student']), asyncRoute(async (req, res) => {
+  const keyword = String(req.body.keyword || '').trim();
+  const email = String(req.body.email || req.authUser.email || '').trim();
+  const frequency = ['Daily', 'Weekly', 'Monthly'].includes(req.body.frequency)
+    ? req.body.frequency : 'Daily';
+  if (!keyword || !email) return res.status(400).json({ error: 'Keyword and email are required.' });
+  const result = await query(
+    'INSERT INTO job_alerts (user_id, keyword, email, frequency) VALUES (?, ?, ?, ?)',
+    [req.authUser.id, keyword, email, frequency]
+  );
+  res.status(201).json({ message: `Alert created for "${keyword}".`, id: result.insertId });
+}));
+
+app.delete('/api/job-alerts/:alertId', authRequired(['Student']), asyncRoute(async (req, res) => {
+  await query(
+    'DELETE FROM job_alerts WHERE id = ? AND user_id = ?',
+    [Number(req.params.alertId), req.authUser.id]
+  );
+  res.json({ message: 'Alert deleted.' });
+}));
+
+// ── Recommended Jobs ─────────────────────────────────────────────────────────
+app.get('/api/jobs/recommended', authRequired(['Student']), asyncRoute(async (req, res) => {
+  const record = await getUserRecordById(req.authUser.id);
+  const profile = normalizeObject(parseJson(record?.profile_json, {}), {});
+  const skills = normalizeArray(profile.skills).map((s) => String(s).toLowerCase()).filter(Boolean);
+
+  const rows = await query(
+    `SELECT j.*, u.company_name, u.full_name AS employer_name, COUNT(a.id) AS applications
+     FROM jobs j
+     INNER JOIN users u ON u.id = j.employer_id
+     LEFT JOIN applications a ON a.job_id = j.id
+     WHERE j.status = 'active'
+     GROUP BY j.id
+     ORDER BY j.created_at DESC
+     LIMIT 50`,
+    []
+  );
+
+  const scored = rows.map((row) => {
+    const text = `${row.title} ${row.description || ''} ${row.requirements || ''}`.toLowerCase();
+    const score = skills.reduce((sum, skill) => sum + (text.includes(skill) ? 1 : 0), 0);
+    return { row, score };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  const recommended = scored.slice(0, 10).map(({ row }) => mapJobRecord(row));
+  res.json({ jobs: recommended });
+}));
+
+// ── Blog Posts ───────────────────────────────────────────────────────────────
+app.get('/api/blog-posts', asyncRoute(async (_req, res) => {
+  if (!ensureDbReady(res)) return;
+  const rows = await query(
+    `SELECT bp.*, u.full_name AS author_name
+     FROM blog_posts bp
+     INNER JOIN users u ON u.id = bp.user_id
+     ORDER BY bp.created_at DESC
+     LIMIT 100`
+  );
+  const posts = rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    excerpt: row.excerpt,
+    content: row.content,
+    author: row.author_name,
+    tags: normalizeArray(parseJson(row.tags_json, [])),
+    readTime: row.read_time,
+    publishedAt: row.created_at
+  }));
+  res.json({ posts });
+}));
+
+app.post('/api/blog-posts', authRequired(['Student']), asyncRoute(async (req, res) => {
+  const title = String(req.body.title || '').trim();
+  const excerpt = String(req.body.excerpt || '').trim();
+  const content = String(req.body.content || '').trim();
+  const tags = normalizeArray(req.body.tags);
+  const readTime = String(req.body.readTime || '3 min').trim();
+  if (!title || !content) return res.status(400).json({ error: 'Title and content are required.' });
+  const result = await query(
+    `INSERT INTO blog_posts (user_id, author_name, title, excerpt, content, tags_json, read_time)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [req.authUser.id, req.authUser.name, title, excerpt, content, JSON.stringify(tags), readTime]
+  );
+  res.status(201).json({ message: 'Post published.', id: result.insertId });
+}));
+
+// ── Notifications ────────────────────────────────────────────────────────────
+app.get('/api/notifications', authRequired(['Student']), asyncRoute(async (req, res) => {
+  const rows = await query(
+    'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50',
+    [req.authUser.id]
+  );
+  res.json({ notifications: rows });
+}));
+
+app.patch('/api/notifications/:notifId/read', authRequired(['Student']), asyncRoute(async (req, res) => {
+  await query(
+    'UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?',
+    [Number(req.params.notifId), req.authUser.id]
+  );
+  res.json({ message: 'Notification marked as read.' });
+}));
+
+app.patch('/api/notifications/read-all', authRequired(['Student']), asyncRoute(async (req, res) => {
+  await query('UPDATE notifications SET is_read = 1 WHERE user_id = ?', [req.authUser.id]);
+  res.json({ message: 'All notifications marked as read.' });
+}));
+
+// ── Employer: Candidate Search ───────────────────────────────────────────────
+app.get('/api/employer/candidates', authRequired(['Employer']), asyncRoute(async (req, res) => {
+  const keyword = String(req.query.keyword || '').trim().toLowerCase();
+  const location = String(req.query.location || '').trim().toLowerCase();
+  const rows = await query(
+    `SELECT u.id, u.full_name, u.email, u.phone, u.location, u.title, u.avatar_url,
+            p.profile_json, p.profile_completion
+     FROM users u
+     LEFT JOIN user_profiles p ON p.user_id = u.id
+     WHERE u.role = 'Student'
+     ORDER BY p.profile_completion DESC
+     LIMIT 100`,
+    []
+  );
+  const candidates = rows
+    .map((row) => {
+      const profile = normalizeObject(parseJson(row.profile_json, {}), {});
+      const skills = normalizeArray(profile.skills).map((s) => String(s).toLowerCase());
+      const resumeText = `${row.full_name} ${row.title || ''} ${(skills).join(' ')} ${row.location || ''}`.toLowerCase();
+      return { row, profile, skills, resumeText };
+    })
+    .filter(({ resumeText, row }) => {
+      const matchesKeyword = !keyword || resumeText.includes(keyword);
+      const matchesLocation = !location || (row.location || '').toLowerCase().includes(location);
+      return matchesKeyword && matchesLocation;
+    })
+    .slice(0, 20)
+    .map(({ row, profile, skills }) => ({
+      id: row.id,
+      name: row.full_name,
+      email: row.email,
+      phone: row.phone || '',
+      location: row.location || '',
+      title: row.title || '',
+      avatar: row.avatar_url || profile.personalInfo?.image || '',
+      skills,
+      profileCompletion: row.profile_completion || 0,
+      experience: normalizeArray(profile.experience).length
+    }));
+  res.json({ candidates });
+}));
+
 app.use((error, _req, res, _next) => {
   console.error(error);
   res.status(500).json({ error: error instanceof Error ? error.message : 'Unexpected server error' });

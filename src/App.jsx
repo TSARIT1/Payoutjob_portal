@@ -16,6 +16,7 @@ import SearchAppearances from "./student/pages/SearchAppearances";
 import Blogs from "./student/pages/Blogs";
 import AssistantChat from "./components/AssistantChat";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Notifications from "./pages/Notifications";
 
 function App() {
   return (
@@ -64,6 +65,14 @@ function App() {
         <Route path="/ai-tools" element={<AITools />} />
         <Route path="/job" element={<JobPortal />} />
         <Route path="/jobs" element={<JobPortal />} />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute allowedRoles={["Student"]} redirectTo="/login" unauthorizedPath="/">
+              <Notifications />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/dashboard"
           element={
