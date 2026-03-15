@@ -93,18 +93,18 @@ const Index = () => {
 const [activeCategory, setActiveCategory] = useState('Skills');
 
   const servicesCompanyLogos = useMemo(() => ([
-    { name: 'Microsoft', src: 'https://logo.clearbit.com/microsoft.com' },
-    { name: 'Google', src: 'https://logo.clearbit.com/google.com' },
-    { name: 'Amazon', src: 'https://logo.clearbit.com/amazon.com' },
-    { name: 'Meta', src: 'https://logo.clearbit.com/meta.com' },
-    { name: 'Oracle', src: 'https://logo.clearbit.com/oracle.com' },
-    { name: 'IBM', src: 'https://logo.clearbit.com/ibm.com' },
-    { name: 'Accenture', src: 'https://logo.clearbit.com/accenture.com' },
-    { name: 'Infosys', src: 'https://logo.clearbit.com/infosys.com' },
-    { name: 'TCS', src: 'https://logo.clearbit.com/tcs.com' },
-    { name: 'Wipro', src: 'https://logo.clearbit.com/wipro.com' },
-    { name: 'Salesforce', src: 'https://logo.clearbit.com/salesforce.com' },
-    { name: 'Adobe', src: 'https://logo.clearbit.com/adobe.com' }
+    { name: 'Microsoft', short: 'MS', theme: 'blue', label: 'Global cloud and enterprise hiring' },
+    { name: 'Google', short: 'G', theme: 'amber', label: 'Product, data, and AI roles' },
+    { name: 'Amazon', short: 'AM', theme: 'orange', label: 'Operations and engineering teams' },
+    { name: 'Meta', short: 'ME', theme: 'sky', label: 'Platform and growth opportunities' },
+    { name: 'Oracle', short: 'OR', theme: 'red', label: 'Enterprise technology positions' },
+    { name: 'IBM', short: 'IBM', theme: 'indigo', label: 'Consulting and infrastructure hiring' },
+    { name: 'Accenture', short: 'AC', theme: 'violet', label: 'Consulting and transformation roles' },
+    { name: 'Infosys', short: 'IN', theme: 'cyan', label: 'Delivery and digital engineering' },
+    { name: 'TCS', short: 'TCS', theme: 'teal', label: 'Large-scale enterprise projects' },
+    { name: 'Wipro', short: 'WI', theme: 'pink', label: 'Technology and support openings' },
+    { name: 'Salesforce', short: 'SF', theme: 'blue', label: 'CRM and cloud platform careers' },
+    { name: 'Adobe', short: 'AD', theme: 'rose', label: 'Creative and product innovation' }
   ]), []);
 
 
