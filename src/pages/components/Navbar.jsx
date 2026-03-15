@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiMenu, FiX, FiLogIn, FiBell, FiUser, FiLogOut, FiBriefcase, FiMoon, FiSun, FiChevronRight, FiShield, FiBarChart2, FiMail } from 'react-icons/fi';
+import { FiMenu, FiX, FiLogIn, FiBell, FiUser, FiLogOut, FiBriefcase, FiMoon, FiSun, FiChevronRight, FiShield, FiBarChart2, FiMail, FiGlobe, FiSliders } from 'react-icons/fi';
 import { FaUser } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -110,6 +110,21 @@ const Navbar = () => {
     hidden: { opacity: 0, y: -20 },
     visible: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -20 }
+  };
+
+  const mobileListVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.045,
+        delayChildren: 0.03,
+      },
+    },
+  };
+
+  const mobileItemVariants = {
+    hidden: { opacity: 0, y: -8 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
   };
 
   return (
@@ -235,17 +250,17 @@ const Navbar = () => {
 
         <div className="auth-buttons">
           <div className="nav-selectors">
-            <label className="nav-selector">
-              <span>{t('languageLabel')}</span>
-              <select value={locale} onChange={(e) => setLocale(e.target.value)}>
+            <label className="nav-selector" title={t('languageLabel')}>
+              <span className="nav-selector-icon" aria-hidden="true"><FiGlobe /></span>
+              <select aria-label={t('languageLabel')} value={locale} onChange={(e) => setLocale(e.target.value)}>
                 {languages.map((language) => (
                   <option key={language.code} value={language.code}>{language.label}</option>
                 ))}
               </select>
             </label>
-            <label className="nav-selector">
-              <span>{t('nav.theme')}</span>
-              <select value={accentTheme} onChange={(e) => setAccentTheme(e.target.value)}>
+            <label className="nav-selector" title={t('nav.theme')}>
+              <span className="nav-selector-icon" aria-hidden="true"><FiSliders /></span>
+              <select aria-label={t('nav.theme')} value={accentTheme} onChange={(e) => setAccentTheme(e.target.value)}>
                 {accentThemes.map((theme) => (
                   <option key={theme.id} value={theme.id}>{theme.label}</option>
                 ))}
@@ -434,21 +449,22 @@ const Navbar = () => {
             variants={mobileMenuVariants}
             transition={{ duration: 0.3 }}
           >
-            <ul>
+            <motion.ul variants={mobileListVariants}>
               {mobileNavLinks.map((link) => (
                 <motion.li
                   key={link.name}
+                  variants={mobileItemVariants}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  <a href={link.path}>{link.name}</a>
+                  <Link to={link.path} className="mobile-nav-link">{link.name}</Link>
                 </motion.li>
               ))}
-              <li>
+              <motion.li variants={mobileItemVariants}>
                 <div className="mobile-selectors">
                   <label className="mobile-selector-block">
-                    <span>{t('languageLabel')}</span>
+                    <span className="mobile-selector-title"><FiGlobe /> {t('languageLabel')}</span>
                     <select value={locale} onChange={(e) => setLocale(e.target.value)}>
                       {languages.map((language) => (
                         <option key={language.code} value={language.code}>{language.label}</option>
@@ -456,7 +472,7 @@ const Navbar = () => {
                     </select>
                   </label>
                   <label className="mobile-selector-block">
-                    <span>{t('nav.theme')}</span>
+                    <span className="mobile-selector-title"><FiSliders /> {t('nav.theme')}</span>
                     <select value={accentTheme} onChange={(e) => setAccentTheme(e.target.value)}>
                       {accentThemes.map((theme) => (
                         <option key={theme.id} value={theme.id}>{theme.label}</option>
@@ -464,17 +480,17 @@ const Navbar = () => {
                     </select>
                   </label>
                 </div>
-              </li>
-              <li>
+              </motion.li>
+              <motion.li variants={mobileItemVariants}>
                 <button
                   className="mobile-theme-toggle"
                   onClick={() => { toggleTheme(); setIsMobileMenuOpen(false); }}
                 >
                   {isDarkMode ? <FiSun /> : <FiMoon />} {isDarkMode ? t('nav.light') : t('nav.dark')}
                 </button>
-              </li>
+              </motion.li>
               {shouldShowEmployerLinks && (
-                <li className="mobile-employer-menu">
+                <motion.li className="mobile-employer-menu" variants={mobileItemVariants}>
                   <div className="mobile-employer-heading">{t('nav.forEmployers')}</div>
                   <a href="/employer/login" onClick={() => setIsMobileMenuOpen(false)}>
                     <FiLogIn /> {t('nav.login')}
@@ -485,91 +501,85 @@ const Navbar = () => {
                   <a href="/admin/login" onClick={() => setIsMobileMenuOpen(false)}>
                     <FiShield /> Super Admin
                   </a>
-                </li>
+                </motion.li>
               )}
               {isAuthenticated ? (
                 <>
                   {isStudentUser && (
-                    <li>
-                      <a href="/notifications" onClick={() => setIsMobileMenuOpen(false)}>
-                      <button className="mobile-notifications-btn" title="Notifications">
+                    <motion.li variants={mobileItemVariants}>
+                      <Link to="/notifications" className="mobile-icon-btn" onClick={() => setIsMobileMenuOpen(false)}>
                         <FiBell />
-                      </button>
-                      </a>
-                    </li>
+                      </Link>
+                    </motion.li>
                   )}
-                  <li>
+                  <motion.li variants={mobileItemVariants}>
                     <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>
                       <button className="mobile-profile-btn" title="Profile">
                         <img src={avatarUrl} alt="Profile" className="profile-avatar-nav" />
                       </button>
                     </Link>
-                  </li>
+                  </motion.li>
                   {isStudentUser && (
                     <>
-                      <li>
+                      <motion.li variants={mobileItemVariants}>
                         <Link to="/applied-jobs" onClick={() => setIsMobileMenuOpen(false)}>
                           <FiBriefcase /> Applied Jobs
                         </Link>
-                      </li>
-                      <li>
+                      </motion.li>
+                      <motion.li variants={mobileItemVariants}>
                         <Link to="/tracker/student" onClick={() => setIsMobileMenuOpen(false)}>
                           <FiBarChart2 /> Job Seeker Tracker
                         </Link>
-                      </li>
+                      </motion.li>
                     </>
                   )}
                   {isEmployerUser && (
                     <>
-                      <li>
+                      <motion.li variants={mobileItemVariants}>
                         <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
                           <FiBriefcase /> Employer Dashboard
                         </Link>
-                      </li>
-                      <li>
+                      </motion.li>
+                      <motion.li variants={mobileItemVariants}>
                         <Link to="/tracker/employer" onClick={() => setIsMobileMenuOpen(false)}>
                           <FiBarChart2 /> Employer Tracker
                         </Link>
-                      </li>
+                      </motion.li>
                     </>
                   )}
                   {isAdminUser && (
-                    <li>
+                    <motion.li variants={mobileItemVariants}>
                       <Link to="/admin/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
                         <FiShield /> Super Admin Dashboard
                       </Link>
-                    </li>
+                    </motion.li>
                   )}
-                  <li>
+                  <motion.li variants={mobileItemVariants}>
                     <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
                       <FiMail /> Contact Us
                     </Link>
-                  </li>
-                  <li>
+                  </motion.li>
+                  <motion.li variants={mobileItemVariants}>
                     <button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }} className="mobile-logout-btn">
                       <FiLogOut /> Logout
                     </button>
-                  </li>
+                  </motion.li>
                 </>
               ) : (
                 <>
-                  <li>
-                    <a href="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                    <button className="mobile-register-btn">
+                  <motion.li variants={mobileItemVariants}>
+                    <Link to="/register" className="mobile-register-btn" onClick={() => setIsMobileMenuOpen(false)}>
                       <FiUser /> {t('nav.register')}
-                    </button>
-                    </a>
-                  </li>
-                  <li>
-                    <a href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                    <button className="mobile-login-btn">
+                    </Link>
+                  </motion.li>
+                  <motion.li variants={mobileItemVariants}>
+                    <Link to="/login" className="mobile-login-btn" onClick={() => setIsMobileMenuOpen(false)}>
                       <FiLogIn /> {t('nav.login')}
-                    </button>
-                    </a>
-                  </li>
+                    </Link>
+                  </motion.li>
                 </>
               )}
-            </ul>
+            </motion.ul>
           </motion.div>
         )}
       </AnimatePresence>
