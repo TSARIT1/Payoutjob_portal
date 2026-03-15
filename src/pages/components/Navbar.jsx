@@ -44,6 +44,8 @@ const Navbar = ({ mode = 'default' }) => {
   };
 
   const contextLinks = authModeLinks[mode] || [];
+  const dashboardShortcutPath = isAdminUser ? '/admin/dashboard' : isEmployerUser ? '/dashboard' : '/profile';
+  const dashboardShortcutLabel = isAdminUser ? 'Admin Dashboard' : isEmployerUser ? 'Employer Dashboard' : 'My Profile';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -332,6 +334,11 @@ const Navbar = ({ mode = 'default' }) => {
           )}
           {isAuthenticated ? (
             <>
+              {!isStudentUser && (
+                <Link to={dashboardShortcutPath} className="dashboard-quick-link" title={dashboardShortcutLabel}>
+                  <FiBriefcase /> {dashboardShortcutLabel}
+                </Link>
+              )}
               {isStudentUser && (
                 <Link to="/notifications">
                   <motion.button
