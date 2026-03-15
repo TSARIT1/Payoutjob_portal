@@ -341,6 +341,13 @@ function generateEmployerApiKey() {
   return `pst_live_${crypto.randomBytes(12).toString('hex')}`;
 }
 
+function normalizeRole(role) {
+  const value = String(role || '').trim().toLowerCase();
+  if (value === 'employer') return 'Employer';
+  if (value === 'admin' || value === 'super admin' || value === 'superadmin') return 'Admin';
+  return 'Student';
+}
+
 async function logActivity({ userId = null, userRole = '', actionType, details = {}, source = 'portal' }) {
   try {
     await query(
@@ -366,7 +373,7 @@ function buildUserFromRecord(record) {
     email: record.email,
     phone: record.phone || '',
     avatar,
-    role: record.role,
+    role: normalizeRole(record.role),
     onboardingStatus: record.onboarding_status || 'approved',
     companySlug: record.company_slug || null,
     externalApiKey: record.external_api_key || null,
@@ -376,7 +383,7 @@ function buildUserFromRecord(record) {
     profileCompleted: Boolean(record.profile_completed)
   };
 
-  if (record.role === 'Employer') {
+  if (baseUser.role === 'Employer') {
     return {
       ...baseUser,
       companyName: record.company_name || storedProfile.name || record.full_name,
@@ -386,7 +393,7 @@ function buildUserFromRecord(record) {
     };
   }
 
-  if (record.role === 'Admin') {
+  if (baseUser.role === 'Admin') {
     return {
       ...baseUser,
       dashboardPreferences: normalizeObject(storedProfile.dashboardPreferences, { theme: 'light', lastLogin: null }),
@@ -441,7 +448,7 @@ async function getUserRecordByEmail(email, role) {
              WHERE u.email = ?`;
 
   if (role) {
-    sql += ' AND u.role = ?';
+    sql += ' AND LOWER(u.role) = LOWER(?)';
     params.push(role);
   }
 
@@ -643,7 +650,7 @@ app.get('/api/health', asyncRoute(async (_req, res) => {
 app.post('/api/auth/register', asyncRoute(async (req, res) => {
   if (!ensureDbReady(res)) return;
 
-  const role = req.body.role || (req.body.companyName ? 'Employer' : 'Student');
+  const role = normalizeRole(req.body.role || (req.body.companyName ? 'Employer' : 'Student'));
   const fullName = req.body.fullName || req.body.name || req.body.companyName;
   const email = String(req.body.email || '').trim().toLowerCase();
   const password = String(req.body.password || '');
@@ -712,7 +719,7 @@ app.post('/api/auth/login', asyncRoute(async (req, res) => {
 
   const email = String(req.body.email || '').trim().toLowerCase();
   const password = String(req.body.password || '');
-  const role = req.body.role || null;
+  const role = req.body.role ? normalizeRole(req.body.role) : null;
 
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required.' });

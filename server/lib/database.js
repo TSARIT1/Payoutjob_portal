@@ -390,10 +390,11 @@ async function ensurePlatformDefaults() {
     }
   }
 
-  const adminRows = await query('SELECT id FROM users WHERE role = ? LIMIT 1', ['Admin']);
+  const admin = demoUsers.admin;
+  const adminPasswordHash = await bcrypt.hash(demoCredentials.admin.password, 10);
+  const adminRows = await query('SELECT id, role, full_name, email FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1', [admin.email]);
+
   if (!adminRows[0]) {
-    const admin = demoUsers.admin;
-    const adminPasswordHash = await bcrypt.hash(demoCredentials.admin.password, 10);
     const result = await query(
       `INSERT INTO users (role, full_name, email, password_hash, phone, title, onboarding_status, location)
        VALUES (?, ?, ?, ?, ?, ?, 'approved', ?)`,
@@ -404,6 +405,24 @@ async function ensurePlatformDefaults() {
        VALUES (?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE profile_json = VALUES(profile_json), profile_completion = VALUES(profile_completion), profile_completed = VALUES(profile_completed)`,
       [result.insertId, toJson(admin.profile), admin.profileCompletion, admin.profileCompleted ? 1 : 0]
+    );
+  } else {
+    const adminId = adminRows[0].id;
+    await query(
+      `UPDATE users
+       SET role = ?,
+           password_hash = ?,
+           onboarding_status = 'approved',
+           title = COALESCE(NULLIF(title, ''), ?),
+           location = COALESCE(NULLIF(location, ''), ?)
+       WHERE id = ?`,
+      ['Admin', adminPasswordHash, admin.title, admin.location, adminId]
+    );
+    await query(
+      `INSERT INTO user_profiles (user_id, profile_json, profile_completion, profile_completed)
+       VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE profile_json = VALUES(profile_json), profile_completion = VALUES(profile_completion), profile_completed = VALUES(profile_completed)`,
+      [adminId, toJson(admin.profile), admin.profileCompletion, admin.profileCompleted ? 1 : 0]
     );
   }
 }
