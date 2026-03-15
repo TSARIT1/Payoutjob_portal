@@ -1,8 +1,11 @@
 import React from 'react';
 import { FaLinkedin, FaTwitter, FaFacebook, FaInstagram, FaMapMarkerAlt, FaPhone, FaEnvelope } from 'react-icons/fa';
+import { useLanguage } from '../../contexts/LanguageContext';
 import './Footer.css';
 
 const Footer = () => {
+  const { t } = useLanguage();
+
   return (
     <footer className="footer">
       <div className="footer-container">
@@ -10,7 +13,7 @@ const Footer = () => {
         <div className="footer-top">
           <div className="footer-brand">
             <h2 className="logo">Payout<span>Job</span></h2>
-            <p className="tagline">Connecting talent with opportunity</p>
+            <p className="tagline">{t('footer.tagline')}</p>
             <div className="social-links">
               <a href="https://linkedin.com" aria-label="LinkedIn"><FaLinkedin /></a>
               <a href="https://twitter.com" aria-label="Twitter"><FaTwitter /></a>
@@ -21,41 +24,41 @@ const Footer = () => {
 
           <div className="footer-links">
             <div className="links-column">
-              <h3>For Job Seekers</h3>
+              <h3>{t('footer.seekers')}</h3>
               <ul>
-                <li><a href="/jobs">Browse Jobs</a></li>
-                <li><a href="/companies">Companies</a></li>
-                <li><a href="/career-advice">Career Advice</a></li>
-                <li><a href="/resume-builder">Resume Builder</a></li>
+                <li><a href="/jobs">{t('footer.browseJobs')}</a></li>
+                <li><a href="/companies">{t('footer.companies')}</a></li>
+                <li><a href="/career-advice">{t('footer.careerAdvice')}</a></li>
+                <li><a href="/resume-builder">{t('footer.resumeBuilder')}</a></li>
               </ul>
             </div>
 
             <div className="links-column">
-              <h3>For Employers</h3>
+              <h3>{t('footer.employers')}</h3>
               <ul>
-              <li><a href="/browse-candidates">Browse Candidates</a></li>
-              <li><a href="/pricing">Pricing Plans</a></li>
-              <li><a href="/recruiting-solutions">Recruiting Solutions</a></li>
+              <li><a href="/browse-candidates">{t('footer.browseCandidates')}</a></li>
+              <li><a href="/pricing">{t('footer.pricing')}</a></li>
+              <li><a href="/recruiting-solutions">{t('footer.recruiting')}</a></li>
             </ul>
           </div>
 
           <div className="links-column">
-            <h3>Company</h3>
+            <h3>{t('footer.company')}</h3>
             <ul>
-              <li><a href="/about">About Us</a></li>
-              <li><a href="/contact">Contact Us</a></li>
-              <li><a href="/blog">Blog</a></li>
-              <li><a href="/careers">Careers</a></li>
+              <li><a href="/about">{t('footer.about')}</a></li>
+              <li><a href="/contact">{t('footer.contact')}</a></li>
+              <li><a href="/blog">{t('footer.blog')}</a></li>
+              <li><a href="/careers">{t('footer.careers')}</a></li>
             </ul>
           </div>
 
           <div className="links-column">
-            <h3>Support</h3>
+            <h3>{t('footer.support')}</h3>
             <ul>
-              <li><a href="/help-center">Help Center</a></li>
-              <li><a href="/faq">FAQs</a></li>
-              <li><a href="/privacy-policy">Privacy Policy</a></li>
-              <li><a href="/terms">Terms of Service</a></li>
+              <li><a href="/help-center">{t('footer.help')}</a></li>
+              <li><a href="/faq">{t('footer.faq')}</a></li>
+              <li><a href="/privacy-policy">{t('footer.privacy')}</a></li>
+              <li><a href="/terms">{t('footer.terms')}</a></li>
             </ul>
           </div>
         </div>
@@ -81,7 +84,7 @@ Andhra Pradesh, India</span>
 
       {/* Bottom Section */}
       <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} PayoutJob. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} PayoutJob. {t('footer.rights')}</p>
         <div className="payment-methods">
           <span></span>
           <div className="payment-icons">

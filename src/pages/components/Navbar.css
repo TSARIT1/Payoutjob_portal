@@ -41,7 +41,7 @@
 }
 
 .navbar .logo span {
-  color: #3498db;
+  color: var(--accent-secondary);
 }
 
 .dark-mode .navbar .logo a {
@@ -49,7 +49,7 @@
 }
 
 .dark-mode .navbar .logo span {
-  color: #63b3ed;
+  color: var(--accent-secondary);
 }
 
 .desktop-nav ul {
@@ -72,7 +72,7 @@
   font-size: 0.65rem;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #ff8a00, #ff4d00);
+  background: linear-gradient(135deg, var(--accent-tertiary), var(--accent-primary));
   padding: 0.18rem 0.45rem;
   border-radius: 999px;
   text-transform: uppercase;
@@ -138,7 +138,7 @@
 }
 
 .has-megamenu.open > .jobs-link a {
-  color: #3498db;
+  color: var(--accent-primary);
 }
 
 .dark-mode .mega-menu {
@@ -164,7 +164,7 @@
 }
 
 .desktop-nav a:hover {
-  color: #3498db;
+  color: var(--accent-primary);
 }
 
 .dark-mode .desktop-nav a {
@@ -182,6 +182,34 @@
   align-items: center;
 }
 
+.nav-selectors {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.nav-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.68rem;
+  color: #64748b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.nav-selector select {
+  min-width: 92px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.45rem 0.65rem;
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
 .employer-menu {
   position: relative;
 }
@@ -194,13 +222,13 @@
   border-radius: 999px;
   border: none;
   font-weight: 600;
-  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
   color: #fff;
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent-primary) 28%, transparent);
 }
 
 .employer-btn.open {
-  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--accent-primary) 36%, transparent);
 }
 
 .employer-chevron {
@@ -269,17 +297,17 @@
 
 .login-btn {
   background-color: transparent;
-  color: #3498db;
-  border: 1px solid #3498db;
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
 }
 
 .register-btn {
-  background-color: #3498db;
+  background-color: var(--accent-primary);
   color: white;
 }
 
 .profile-btn {
-  background-color: #3498db;
+  background-color: var(--accent-primary);
   color: white;
   width: 40px;
   height: 40px;
@@ -292,8 +320,8 @@
 }
 
 .notifications-btn {
-  background-color: rgba(52, 152, 219, 0.1);
-  color: #3498db;
+  background-color: color-mix(in srgb, var(--accent-primary) 10%, white);
+  color: var(--accent-primary);
   border: none;
   width: 40px;
   height: 40px;
@@ -371,7 +399,7 @@
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  color: #2563eb;
+  color: var(--accent-primary);
   font-weight: 600;
 }
 
@@ -413,17 +441,17 @@
 
 .mobile-login-btn {
   background-color: transparent;
-  color: #3498db;
-  border: 1px solid #3498db;
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-primary);
 }
 
 .mobile-register-btn {
-  background-color: #3498db;
+  background-color: var(--accent-primary);
   color: white;
 }
 
 .mobile-profile-btn {
-  background-color: #3498db;
+  background-color: var(--accent-primary);
   color: white;
   width: 40px;
   height: 40px;
@@ -437,8 +465,8 @@
 }
 
 .mobile-notifications-btn {
-  background-color: rgba(52, 152, 219, 0.1);
-  color: #3498db;
+  background-color: color-mix(in srgb, var(--accent-primary) 10%, white);
+  color: var(--accent-primary);
   border: none;
   width: 40px;
   height: 40px;
@@ -467,8 +495,8 @@
 
 .theme-toggle-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(52, 152, 219, 0.2);
-  border-color: #3498db;
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--accent-primary) 22%, transparent);
+  border-color: var(--accent-primary);
 }
 
 .dark-mode .theme-toggle-btn {
@@ -496,6 +524,32 @@
   background: #111827;
   border-color: #1f2937;
   color: #e2e8f0;
+}
+
+.mobile-selectors {
+  display: grid;
+  gap: 10px;
+}
+
+.mobile-selector-block {
+  display: grid;
+  gap: 6px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.mobile-selector-block select {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  color: #0f172a;
+}
+
+@media (max-width: 1100px) {
+  .nav-selectors {
+    display: none;
+  }
 }
 
 @media (max-width: 768px) {

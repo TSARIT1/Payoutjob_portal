@@ -5,6 +5,7 @@ import { FiMenu, FiX, FiLogIn, FiBell, FiUser, FiSettings, FiLogOut, FiBriefcase
 import { FaUser } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -15,7 +16,8 @@ const Navbar = () => {
   const [isCompaniesMenuOpen, setIsCompaniesMenuOpen] = useState(false);
   const [isEmployerMenuOpen, setIsEmployerMenuOpen] = useState(false);
   const { user, logout, isAuthenticated } = useAuth();
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { isDarkMode, toggleTheme, accentTheme, setAccentTheme, accentThemes } = useTheme();
+  const { locale, setLocale, t, languages } = useLanguage();
   const navigate = useNavigate();
 
   const avatarUrl = user?.avatar || 'https://static.vecteezy.com/system/resources/previews/036/594/092/non_2x/man-empty-avatar-photo-placeholder-for-social-networks-resumes-forums-and-dating-sites-male-and-female-no-photo-images-for-unfilled-user-profile-free-vector.jpg';
@@ -96,10 +98,10 @@ const Navbar = () => {
   ];
 
   const mobileNavLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Jobs', path: '/job' },
-    { name: 'Companies', path: '/companies' },
-    { name: 'AI Tools', path: '/ai-tools' },
+    { name: t('nav.home'), path: '/' },
+    { name: t('nav.jobs'), path: '/job' },
+    { name: t('nav.companies'), path: '/companies' },
+    { name: t('nav.aiTools'), path: '/ai-tools' },
   ];
 
   const mobileMenuVariants = {
@@ -129,14 +131,14 @@ const Navbar = () => {
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.95 }}
             >
-              <a href="/">Home</a>
+              <a href="/">{t('nav.home')}</a>
             </motion.li>
 
             <motion.li
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.95 }}
             >
-              <a href="/ai-tools">AI Tools</a>
+              <a href="/ai-tools">{t('nav.aiTools')}</a>
             </motion.li>
 
             <motion.li
@@ -149,7 +151,7 @@ const Navbar = () => {
               onBlur={() => setIsJobsMenuOpen(false)}
             >
               <div className="jobs-link">
-                <a href="/job">Jobs</a>
+                <a href="/job">{t('nav.jobs')}</a>
                 <span className="badge-new">New</span>
               </div>
               <AnimatePresence>
@@ -184,7 +186,7 @@ const Navbar = () => {
               onBlur={() => setIsCompaniesMenuOpen(false)}
             >
               <div className="companies-link">
-                <a href="/companies">Companies</a>
+                <a href="/companies">{t('nav.companies')}</a>
               </div>
               <AnimatePresence>
                 {isCompaniesMenuOpen && (
@@ -230,12 +232,30 @@ const Navbar = () => {
         </nav>
 
         <div className="auth-buttons">
+          <div className="nav-selectors">
+            <label className="nav-selector">
+              <span>{t('languageLabel')}</span>
+              <select value={locale} onChange={(e) => setLocale(e.target.value)}>
+                {languages.map((language) => (
+                  <option key={language.code} value={language.code}>{language.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className="nav-selector">
+              <span>{t('nav.theme')}</span>
+              <select value={accentTheme} onChange={(e) => setAccentTheme(e.target.value)}>
+                {accentThemes.map((theme) => (
+                  <option key={theme.id} value={theme.id}>{theme.label}</option>
+                ))}
+              </select>
+            </label>
+          </div>
           <motion.button
             className="theme-toggle-btn cursor-pointer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={toggleTheme}
-            title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={isDarkMode ? t('nav.light') : t('nav.dark')}
             aria-label="Toggle theme"
           >
             {isDarkMode ? <FiSun /> : <FiMoon />}
@@ -248,7 +268,7 @@ const Navbar = () => {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsEmployerMenuOpen((prev) => !prev)}
               >
-                For Employers
+                {t('nav.forEmployers')}
                 <FiChevronRight className={`employer-chevron ${isEmployerMenuOpen ? 'open' : ''}`} />
               </motion.button>
               <AnimatePresence>
@@ -261,10 +281,10 @@ const Navbar = () => {
                     transition={{ duration: 0.18 }}
                   >
                     <Link to="/employer/login" onClick={() => setIsEmployerMenuOpen(false)}>
-                      <FiLogIn /> Login
+                      <FiLogIn /> {t('nav.login')}
                     </Link>
                     <Link to="/employer/register" onClick={() => setIsEmployerMenuOpen(false)}>
-                      <FiUser /> Register
+                      <FiUser /> {t('nav.register')}
                     </Link>
                   </motion.div>
                 )}
@@ -306,7 +326,7 @@ const Navbar = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <FiLogIn /> Login
+                  <FiLogIn /> {t('nav.login')}
                 </motion.button>
               </Link>
               <Link to="/register">
@@ -315,7 +335,7 @@ const Navbar = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <FiUser /> Register
+                  <FiUser /> {t('nav.register')}
                 </motion.button>
               </Link>
             </>
@@ -389,21 +409,41 @@ const Navbar = () => {
                 </motion.li>
               ))}
               <li>
+                <div className="mobile-selectors">
+                  <label className="mobile-selector-block">
+                    <span>{t('languageLabel')}</span>
+                    <select value={locale} onChange={(e) => setLocale(e.target.value)}>
+                      {languages.map((language) => (
+                        <option key={language.code} value={language.code}>{language.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="mobile-selector-block">
+                    <span>{t('nav.theme')}</span>
+                    <select value={accentTheme} onChange={(e) => setAccentTheme(e.target.value)}>
+                      {accentThemes.map((theme) => (
+                        <option key={theme.id} value={theme.id}>{theme.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </li>
+              <li>
                 <button
                   className="mobile-theme-toggle"
                   onClick={() => { toggleTheme(); setIsMobileMenuOpen(false); }}
                 >
-                  {isDarkMode ? <FiSun /> : <FiMoon />} {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+                  {isDarkMode ? <FiSun /> : <FiMoon />} {isDarkMode ? t('nav.light') : t('nav.dark')}
                 </button>
               </li>
               {shouldShowEmployerLinks && (
                 <li className="mobile-employer-menu">
-                  <div className="mobile-employer-heading">For Employers</div>
+                  <div className="mobile-employer-heading">{t('nav.forEmployers')}</div>
                   <a href="/employer/login" onClick={() => setIsMobileMenuOpen(false)}>
-                    <FiLogIn /> Login
+                    <FiLogIn /> {t('nav.login')}
                   </a>
                   <a href="/employer/register" onClick={() => setIsMobileMenuOpen(false)}>
-                    <FiUser /> Register
+                    <FiUser /> {t('nav.register')}
                   </a>
                 </li>
               )}
@@ -439,14 +479,14 @@ const Navbar = () => {
                   <li>
                     <a href="/register" onClick={() => setIsMobileMenuOpen(false)}>
                     <button className="mobile-register-btn">
-                      <FiUser /> Register
+                      <FiUser /> {t('nav.register')}
                     </button>
                     </a>
                   </li>
                   <li>
                     <a href="/login" onClick={() => setIsMobileMenuOpen(false)}>
                     <button className="mobile-login-btn">
-                      <FiLogIn /> Login
+                      <FiLogIn /> {t('nav.login')}
                     </button>
                     </a>
                   </li>

@@ -26,11 +26,13 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import { FiCheckCircle, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Index = () => {
 
   const [activeIndex, setActiveIndex] = useState(null);
   const [searchForm, setSearchForm] = useState({ skills: '', location: '', experience: '' });
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const toggleFAQ = (index) => {
@@ -223,24 +225,24 @@ const popular = [
       <section className="hero-section">
         <div className="container hero-grid">
           <motion.div className="hero-content" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
-            <p className="hero-kicker">Free For Job Seekers And Employers</p>
-            <h1>Build a smarter hiring workflow with <span>PayoutJob</span></h1>
+            <p className="hero-kicker">{t('home.heroKicker')}</p>
+            <h1>{t('home.heroTitle')} <span>PayoutJob</span></h1>
             <p>
-              Beautiful and professional job discovery with AI-assisted tools, recruiter dashboards, and smooth mobile-ready workflows.
+              {t('home.heroBody')}
             </p>
             <div className="hero-cta">
-              <Link className="hero-btn primary" to="/job">Browse Jobs</Link>
-              <Link className="hero-btn secondary" to="/ai-tools">Explore AI Tools</Link>
+              <Link className="hero-btn primary" to="/job">{t('home.browseJobs')}</Link>
+              <Link className="hero-btn secondary" to="/ai-tools">{t('home.exploreAi')}</Link>
             </div>
           </motion.div>
           <motion.div className="hero-stat-card" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.08 }}>
-            <h3>Professional + Smooth</h3>
+            <h3>{t('home.statsTitle')}</h3>
             <div className="stat-list">
-              <div><strong>50K+</strong><span>Active candidates</span></div>
-              <div><strong>2.5K+</strong><span>Open roles</span></div>
-              <div><strong>900+</strong><span>Hiring companies</span></div>
+              <div><strong>50K+</strong><span>{t('home.statCandidates')}</span></div>
+              <div><strong>2.5K+</strong><span>{t('home.statRoles')}</span></div>
+              <div><strong>900+</strong><span>{t('home.statCompanies')}</span></div>
             </div>
-            <p>Designed for both job seekers and employers with polished UI cards, free onboarding, clear actions, and reliable performance.</p>
+            <p>{t('home.statsBody')}</p>
           </motion.div>
         </div>
       </section>
@@ -257,7 +259,7 @@ const popular = [
                 value={searchForm.skills}
                 onChange={(e) => setSearchForm((prev) => ({ ...prev, skills: e.target.value }))}
                 className="sr-input"
-                placeholder="Skills or company"
+                placeholder={t('home.searchSkills')}
               />
             </label>
             <label htmlFor="location" className="group">
@@ -269,7 +271,7 @@ const popular = [
                 value={searchForm.location}
                 onChange={(e) => setSearchForm((prev) => ({ ...prev, location: e.target.value }))}
                 className="sr-input"
-                placeholder="Location"
+                placeholder={t('home.searchLocation')}
               />
             </label>
             <label htmlFor="experience" className="group">
@@ -281,11 +283,11 @@ const popular = [
                 value={searchForm.experience}
                 onChange={(e) => setSearchForm((prev) => ({ ...prev, experience: e.target.value }))}
                 className="sr-input"
-                placeholder="Experience"
+                placeholder={t('home.searchExperience')}
               />
             </label>
             <div className="box-btns">
-              <button className="buttton-search bg-blue-600 hover:bg-blue-500 cursor-pointer text-amber-50 p-3" onClick={handleSearch}>Search Jobs</button>
+              <button className="buttton-search bg-blue-600 hover:bg-blue-500 cursor-pointer text-amber-50 p-3" onClick={handleSearch}>{t('home.searchButton')}</button>
             </div>
           </div>
         </div>
@@ -294,46 +296,45 @@ const popular = [
       <section className="top-benefits container">
         <article className="benefit-card">
           <FiCheckCircle />
-          <h3>Free for Job Seekers</h3>
-          <p>Register and apply without subscription costs as a job seeker.</p>
+          <h3>{t('home.benefit1Title')}</h3>
+          <p>{t('home.benefit1Text')}</p>
         </article>
         <article className="benefit-card">
           <FiCheckCircle />
-          <h3>Free for Employers to Start</h3>
-          <p>Employers can start posting jobs for free, then manage applicants and communication from one dashboard.</p>
+          <h3>{t('home.benefit2Title')}</h3>
+          <p>{t('home.benefit2Text')}</p>
         </article>
         <article className="benefit-card">
           <FiCheckCircle />
-          <h3>AI Enhanced Workflow</h3>
-          <p>Tailored resume support, CV checks, and referral insights built-in.</p>
+          <h3>{t('home.benefit3Title')}</h3>
+          <p>{t('home.benefit3Text')}</p>
         </article>
       </section>
 
       <section className="company-showcase container">
         <div className="section-copy company-copy">
-          <p className="section-eyebrow">Trusted Hiring Network</p>
-          <h2>Top MNC companies and fast-growing brands</h2>
+          <p className="section-eyebrow">{t('home.companyEyebrow')}</p>
+          <h2>{t('home.companyTitle')}</h2>
           <p>
-            Explore opportunities from recognized employers with a cleaner logo wall, stronger visibility,
-            and a hiring experience that feels credible from the first screen.
+            {t('home.companyBody')}
           </p>
         </div>
         <div className="company-section-card">
           <ImageCarousel images={servicesCompanyLogos} />
         </div>
         <div className="company-notes">
-          <span>Free employer onboarding</span>
-          <span>Professional job seeker experience</span>
-          <span>Reliable AI-assisted workflow</span>
+          <span>{t('home.companyNote1')}</span>
+          <span>{t('home.companyNote2')}</span>
+          <span>{t('home.companyNote3')}</span>
         </div>
       </section>
     </div>
 
       <section className="p-category category-shell">
         <div className="section-copy">
-          <p className="section-eyebrow">Popular Paths</p>
-          <h2 className="text-center text-2xl font-medium heading">Popular Categories</h2>
-          <p>Browse high-intent categories that help job seekers and employers move faster.</p>
+          <p className="section-eyebrow">{t('home.categoriesEyebrow')}</p>
+          <h2 className="text-center text-2xl font-medium heading">{t('home.categoriesTitle')}</h2>
+          <p>{t('home.categoriesBody')}</p>
         </div>
         <div className="pc-main">
       {
@@ -352,8 +353,8 @@ const popular = [
 
       <section className="workflow container">
         <div className="workflow-head">
-          <h2>Smooth Job Workflow</h2>
-          <p>Move from search to hiring with a clean, guided, and professional process.</p>
+          <h2>{t('home.workflowTitle')}</h2>
+          <p>{t('home.workflowBody')}</p>
         </div>
         <div className="workflow-grid">
           {workflowSteps.map((step, index) => (
@@ -368,8 +369,8 @@ const popular = [
 
       <section className="app-support container">
         <div className="app-support-head">
-          <h2>Play Store, Android, and iOS Support</h2>
-          <p>Cross-platform ready UI experience for mobile users and recruiters on the go.</p>
+          <h2>{t('home.appTitle')}</h2>
+          <p>{t('home.appBody')}</p>
         </div>
         <div className="app-support-grid">
           {appSupportCards.map((card) => (
@@ -385,7 +386,7 @@ const popular = [
 
 
      <div className="fvc-container">
-      <h1 className="fvc-heading">Find Jobs by Category</h1>
+      <h1 className="fvc-heading">{t('home.categoryFinderTitle')}</h1>
 
       <div className="fvc-tabs">
         {Object.keys(data).map(category => (
@@ -419,9 +420,9 @@ const popular = [
       <section className="faq-section">
       <div className="faq-shell">
         <div className="section-copy faq-copy">
-          <p className="section-eyebrow">Need Answers Fast</p>
-          <h2 className="faq-section-title">Frequently Asked Questions</h2>
-          <p>Clear guidance for job seekers and employers using the portal for free.</p>
+          <p className="section-eyebrow">{t('home.faqEyebrow')}</p>
+          <h2 className="faq-section-title">{t('home.faqTitle')}</h2>
+          <p>{t('home.faqBody')}</p>
         </div>
       <div className="faq-container">
         <div className="faq-container">
