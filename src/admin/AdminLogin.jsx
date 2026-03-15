@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Navbar from '../pages/components/Navbar';
 import Footer from '../pages/components/Footer';
 import { useAuth } from '../contexts/AuthContext';
@@ -10,7 +10,15 @@ export default function AdminLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const location = useLocation();
+  const { login, isAuthenticated, user } = useAuth();
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    if (String(user?.role || '').toLowerCase() === 'admin') {
+      navigate('/admin/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate, user?.role]);
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -22,7 +30,10 @@ export default function AdminLogin() {
       setError(result.error || 'Login failed');
       return;
     }
-    navigate('/admin/dashboard');
+
+    const fromPath = location.state?.from?.pathname;
+    const targetPath = fromPath && fromPath !== '/' ? fromPath : '/admin/dashboard';
+    navigate(targetPath, { replace: true });
   };
 
   return (

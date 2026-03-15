@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FcGoogle } from 'react-icons/fc';
 import './AuthStyles.css';
 import Navbar from '../../pages/components/Navbar';
 import OtpVerification from './OtpVerification';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Footer from '../../pages/components/Footer';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -16,8 +16,16 @@ const StudentLogin = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    if (String(user?.role || '').toLowerCase() === 'student') {
+      navigate('/profile', { replace: true });
+    }
+  }, [isAuthenticated, navigate, user?.role]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,38 +37,39 @@ const StudentLogin = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      setIsLoading(true);
-      try {
-        const result = await login(formData.email, formData.password, 'Student');
-        if (result.success) {
-          // After successful login, go directly to the profile dashboard
-          navigate('/profile');
-        } else {
-          setErrors({ general: result.error });
-        }
-      } catch (error) {
-        setErrors({ general: 'Login failed. Please try again.' });
-      } finally {
-        setIsLoading(false);
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+    try {
+      const result = await login(formData.email, formData.password, 'Student');
+      if (result.success) {
+        const fromPath = location.state?.from?.pathname;
+        const targetPath = fromPath && fromPath !== '/' ? fromPath : '/profile';
+        navigate(targetPath, { replace: true });
+      } else {
+        setErrors({ general: result.error });
       }
+    } catch (_error) {
+      setErrors({ general: 'Login failed. Please try again.' });
+    } finally {
+      setIsLoading(false);
     }
   };
 

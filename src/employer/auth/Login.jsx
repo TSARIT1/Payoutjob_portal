@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import OtpVerification from './OtpVerification';
 import './style.css';
 import Navbar from '../../pages/components/Navbar';
@@ -15,8 +15,16 @@ const EmpLogin = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [showOtpVerification, setShowOtpVerification] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { loginAsEmployer } = useAuth();
+  const { loginAsEmployer, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    if (String(user?.role || '').toLowerCase() === 'employer') {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate, user?.role]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,17 +36,17 @@ const EmpLogin = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.email) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
     }
-    
+
     if (!formData.password) {
       newErrors.password = 'Password is required';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -51,11 +59,13 @@ const EmpLogin = () => {
     try {
       const result = await loginAsEmployer(formData.email, formData.password);
       if (result.success) {
-        navigate('/dashboard');
+        const fromPath = location.state?.from?.pathname;
+        const targetPath = fromPath && fromPath !== '/' ? fromPath : '/dashboard';
+        navigate(targetPath, { replace: true });
       } else {
         setErrors((prev) => ({ ...prev, general: result.error || 'Login failed' }));
       }
-    } catch (error) {
+    } catch (_error) {
       setErrors((prev) => ({ ...prev, general: 'Login failed. Please try again.' }));
     } finally {
       setIsLoading(false);
