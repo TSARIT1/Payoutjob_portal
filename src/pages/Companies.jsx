@@ -336,6 +336,9 @@ const Companies = () => {
 
 		return base;
 	}, [companies, searchTerm, selectedCategory, categories, categoryCatalogs]);
+
+		const getLogoFallback = (name) =>
+			`https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Company')}&background=0f172a&color=ffffff&size=120&rounded=true&bold=true`;
 	
 
 	return (
@@ -403,7 +406,7 @@ const Companies = () => {
 										>
 											<div className="card-header">
 												<div className="logo-wrap">
-													<img src={company.logo} alt={company.name} />
+													<img src={company.logo} alt={company.name} onError={(event) => { event.currentTarget.src = getLogoFallback(company.name); }} />
 												</div>
 												<div className="card-meta">
 													<h3>{company.name}</h3>

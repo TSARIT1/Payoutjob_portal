@@ -63,6 +63,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const loginAsEmployer = (email, password) => login(email, password, 'Employer');
+  const loginAsAdmin = (email, password) => login(email, password, 'Admin');
 
   const applySession = ({ token, user: sessionUser }) => {
     storeAuthSession({ token, user: sessionUser });
@@ -86,6 +87,7 @@ export const AuthProvider = ({ children }) => {
     isLoading,
     login,
     loginAsEmployer,
+    loginAsAdmin,
     applySession,
     logout,
     updateProfile,

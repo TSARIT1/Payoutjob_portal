@@ -52,14 +52,18 @@ async function createSchema() {
   await query(`
     CREATE TABLE IF NOT EXISTS users (
       id INT AUTO_INCREMENT PRIMARY KEY,
-      role ENUM('Student', 'Employer') NOT NULL,
+      role VARCHAR(30) NOT NULL,
       full_name VARCHAR(150) NOT NULL,
       email VARCHAR(180) NOT NULL UNIQUE,
       password_hash VARCHAR(255) NOT NULL,
       phone VARCHAR(30) DEFAULT '',
       university VARCHAR(180) DEFAULT NULL,
       company_name VARCHAR(180) DEFAULT NULL,
+      company_slug VARCHAR(180) DEFAULT NULL,
       title VARCHAR(180) DEFAULT NULL,
+      onboarding_status VARCHAR(30) DEFAULT 'approved',
+      onboarding_note TEXT,
+      external_api_key VARCHAR(120) DEFAULT NULL,
       location VARCHAR(180) DEFAULT NULL,
       avatar_url TEXT DEFAULT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -187,6 +191,69 @@ async function createSchema() {
         CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS activity_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT DEFAULT NULL,
+        user_role VARCHAR(30) DEFAULT '',
+        action_type VARCHAR(120) NOT NULL,
+        details_json TEXT,
+        source VARCHAR(60) DEFAULT 'portal',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_activity_user (user_id),
+        INDEX idx_activity_action (action_type)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS contact_messages (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(160) NOT NULL,
+        email VARCHAR(180) NOT NULL,
+        phone VARCHAR(50) DEFAULT '',
+        company VARCHAR(180) DEFAULT '',
+        subject VARCHAR(220) NOT NULL,
+        message LONGTEXT NOT NULL,
+        status VARCHAR(30) DEFAULT 'new',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    `);
+
+    const roleColumn = await query("SHOW COLUMNS FROM users LIKE 'role'");
+    if (roleColumn[0] && String(roleColumn[0].Type || '').toLowerCase().includes('enum')) {
+      await query('ALTER TABLE users MODIFY COLUMN role VARCHAR(30) NOT NULL');
+    }
+
+    const onboardingCol = await query("SHOW COLUMNS FROM users LIKE 'onboarding_status'");
+    if (!onboardingCol[0]) {
+      await query("ALTER TABLE users ADD COLUMN onboarding_status VARCHAR(30) DEFAULT 'approved' AFTER title");
+    }
+
+    const onboardingNoteCol = await query("SHOW COLUMNS FROM users LIKE 'onboarding_note'");
+    if (!onboardingNoteCol[0]) {
+      await query('ALTER TABLE users ADD COLUMN onboarding_note TEXT AFTER onboarding_status');
+    }
+
+    const slugCol = await query("SHOW COLUMNS FROM users LIKE 'company_slug'");
+    if (!slugCol[0]) {
+      await query('ALTER TABLE users ADD COLUMN company_slug VARCHAR(180) DEFAULT NULL AFTER company_name');
+    }
+
+    const apiKeyCol = await query("SHOW COLUMNS FROM users LIKE 'external_api_key'");
+    if (!apiKeyCol[0]) {
+      await query('ALTER TABLE users ADD COLUMN external_api_key VARCHAR(120) DEFAULT NULL AFTER onboarding_note');
+    }
+
+    const slugIdx = await query("SHOW INDEX FROM users WHERE Key_name = 'uniq_company_slug'");
+    if (!slugIdx[0]) {
+      await query('ALTER TABLE users ADD UNIQUE KEY uniq_company_slug (company_slug)');
+    }
+
+    const apiKeyIdx = await query("SHOW INDEX FROM users WHERE Key_name = 'uniq_external_api_key'");
+    if (!apiKeyIdx[0]) {
+      await query('ALTER TABLE users ADD UNIQUE KEY uniq_external_api_key (external_api_key)');
+    }
 }
 
 async function seedDatabase() {
@@ -200,6 +267,7 @@ async function seedDatabase() {
 
   const student = demoUsers.student;
   const employer = demoUsers.employer;
+  const admin = demoUsers.admin;
 
   const studentResult = await query(
     `INSERT INTO users (role, full_name, email, password_hash, phone, university, title, location, avatar_url)
@@ -218,8 +286,8 @@ async function seedDatabase() {
   );
 
   const employerResult = await query(
-    `INSERT INTO users (role, full_name, email, password_hash, phone, company_name, title, location, avatar_url)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO users (role, full_name, email, password_hash, phone, company_name, company_slug, title, onboarding_status, external_api_key, location, avatar_url)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       employer.role,
       employer.fullName,
@@ -227,14 +295,25 @@ async function seedDatabase() {
       employerPasswordHash,
       employer.phone,
       employer.companyName,
+      employer.companySlug,
       employer.title,
+      'approved',
+      employer.externalApiKey,
       employer.location,
       employer.profile.logo || null
     ]
   );
 
+  const adminPasswordHash = await bcrypt.hash(demoCredentials.admin.password, 10);
+  const adminResult = await query(
+    `INSERT INTO users (role, full_name, email, password_hash, phone, title, onboarding_status, location)
+     VALUES (?, ?, ?, ?, ?, ?, 'approved', ?)`,
+    [admin.role, admin.fullName, admin.email, adminPasswordHash, admin.phone, admin.title, admin.location]
+  );
+
   const studentId = studentResult.insertId;
   const employerId = employerResult.insertId;
+  const adminId = adminResult.insertId;
 
   await query(
     `INSERT INTO user_profiles (user_id, profile_json, profile_completion, profile_completed) VALUES (?, ?, ?, ?)`,
@@ -244,6 +323,11 @@ async function seedDatabase() {
   await query(
     `INSERT INTO user_profiles (user_id, profile_json, profile_completion, profile_completed) VALUES (?, ?, ?, ?)`,
     [employerId, toJson(employer.profile), employer.profileCompletion, employer.profileCompleted ? 1 : 0]
+  );
+
+  await query(
+    `INSERT INTO user_profiles (user_id, profile_json, profile_completion, profile_completed) VALUES (?, ?, ?, ?)`,
+    [adminId, toJson(admin.profile), admin.profileCompletion, admin.profileCompleted ? 1 : 0]
   );
 
   const insertedJobs = [];
@@ -277,6 +361,53 @@ async function seedDatabase() {
   }
 }
 
+async function ensurePlatformDefaults() {
+  const employers = await query(
+    `SELECT id, company_name, full_name, company_slug, onboarding_status, external_api_key
+     FROM users
+     WHERE role = 'Employer'`
+  );
+
+  for (const employer of employers) {
+    const updates = [];
+    const params = [];
+    if (!employer.company_slug) {
+      const raw = String(employer.company_name || employer.full_name || `company-${employer.id}`).toLowerCase();
+      const slug = raw.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || `company-${employer.id}`;
+      updates.push('company_slug = ?');
+      params.push(`${slug}-${employer.id}`);
+    }
+    if (!employer.onboarding_status) {
+      updates.push("onboarding_status = 'approved'");
+    }
+    if (!employer.external_api_key) {
+      updates.push('external_api_key = ?');
+      params.push(`pst_live_${Math.random().toString(36).slice(2, 16)}${employer.id}`);
+    }
+    if (updates.length) {
+      params.push(employer.id);
+      await query(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, params);
+    }
+  }
+
+  const adminRows = await query('SELECT id FROM users WHERE role = ? LIMIT 1', ['Admin']);
+  if (!adminRows[0]) {
+    const admin = demoUsers.admin;
+    const adminPasswordHash = await bcrypt.hash(demoCredentials.admin.password, 10);
+    const result = await query(
+      `INSERT INTO users (role, full_name, email, password_hash, phone, title, onboarding_status, location)
+       VALUES (?, ?, ?, ?, ?, ?, 'approved', ?)`,
+      [admin.role, admin.fullName, admin.email, adminPasswordHash, admin.phone, admin.title, admin.location]
+    );
+    await query(
+      `INSERT INTO user_profiles (user_id, profile_json, profile_completion, profile_completed)
+       VALUES (?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE profile_json = VALUES(profile_json), profile_completion = VALUES(profile_completion), profile_completed = VALUES(profile_completed)`,
+      [result.insertId, toJson(admin.profile), admin.profileCompletion, admin.profileCompleted ? 1 : 0]
+    );
+  }
+}
+
 export async function initializeDatabase() {
   try {
     await createDatabaseIfMissing();
@@ -292,6 +423,7 @@ export async function initializeDatabase() {
     });
     await createSchema();
     await seedDatabase();
+    await ensurePlatformDefaults();
     ready = true;
     lastError = null;
   } catch (error) {

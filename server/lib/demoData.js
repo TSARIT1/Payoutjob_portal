@@ -6,6 +6,10 @@ export const demoCredentials = {
   employer: {
     email: 'employer@payoutjob.com',
     password: 'Payout@123'
+  },
+  admin: {
+    email: 'admin@payoutjob.com',
+    password: 'Payout@123'
   }
 };
 
@@ -87,6 +91,8 @@ export const demoUsers = {
     email: demoCredentials.employer.email,
     phone: '+91 9988776655',
     companyName: 'Northstar Talent Labs',
+    companySlug: 'northstar-talent-labs',
+    externalApiKey: 'pst_live_northstar_2026',
     title: 'Talent Acquisition Lead',
     location: 'Bangalore, India',
     profile: {
@@ -131,6 +137,30 @@ export const demoUsers = {
       }
     },
     profileCompletion: 92,
+    profileCompleted: true
+  },
+  admin: {
+    role: 'Admin',
+    fullName: 'TSAR Platform Admin',
+    email: demoCredentials.admin.email,
+    phone: '+91 9491301258',
+    title: 'Super Admin',
+    location: 'Andhra Pradesh, India',
+    profile: {
+      personalInfo: {
+        name: 'TSAR Platform Admin',
+        headline: 'Global Platform Operations',
+        location: 'Andhra Pradesh, India',
+        email: demoCredentials.admin.email,
+        phone: '+91 9491301258',
+        image: ''
+      },
+      dashboardPreferences: {
+        theme: 'light',
+        lastLogin: null
+      }
+    },
+    profileCompletion: 100,
     profileCompleted: true
   }
 };

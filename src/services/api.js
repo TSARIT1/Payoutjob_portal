@@ -225,6 +225,46 @@ export async function getAiReferralInsights(payload) {
     return response.data;
   }
 
+  export async function fetchStudentTracker() {
+    const response = await API.get('/tracker/student');
+    return response.data;
+  }
+
+  export async function fetchEmployerTracker() {
+    const response = await API.get('/tracker/employer');
+    return response.data;
+  }
+
+  export async function fetchAdminDashboard() {
+    const response = await API.get('/admin/dashboard');
+    return response.data;
+  }
+
+  export async function fetchAdminEmployers() {
+    const response = await API.get('/admin/employers');
+    return response.data;
+  }
+
+  export async function approveEmployer(employerId, payload = {}) {
+    const response = await API.patch(`/admin/employers/${employerId}/approve`, payload);
+    return response.data;
+  }
+
+  export async function rejectEmployer(employerId, payload = {}) {
+    const response = await API.patch(`/admin/employers/${employerId}/reject`, payload);
+    return response.data;
+  }
+
+  export async function fetchAdminContactMessages() {
+    const response = await API.get('/admin/contact-messages');
+    return response.data;
+  }
+
+  export async function submitContactMessage(payload) {
+    const response = await API.post('/contact-us', payload);
+    return response.data;
+  }
+
 export const StudentRegister = registerStudent;
 export const StudentLogin = (data) => loginUser({ ...data, role: 'Student' });
 export const OtpVerification = async () => ({ success: true });

@@ -31,14 +31,47 @@ export default function AssistantChat({ userType = 'jobseeker' }) {
     setMessages(prev => [...prev, { role: 'user', content: text }]);
     setLoading(true);
     try {
-      const resp = await fetch(`${AI_SERVER_URL}/ai/chat`, {
+      const streamResp = await fetch(`${AI_SERVER_URL}/ai/chat/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, userType: persona })
       });
-      const data = await resp.json();
-      const reply = data.reply || data.error || 'No response.';
-      setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+      if (!streamResp.ok || !streamResp.body) {
+        const fallbackResp = await fetch(`${AI_SERVER_URL}/ai/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, userType: persona })
+        });
+        const fallbackData = await fallbackResp.json();
+        setMessages(prev => [...prev, { role: 'assistant', content: fallbackData.reply || fallbackData.error || 'No response.' }]);
+      } else {
+        let buffer = '';
+        const decoder = new TextDecoder('utf-8');
+        setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+        const reader = streamResp.body.getReader();
+        // Read SSE chunks and progressively update assistant text.
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n').filter((line) => line.startsWith('data: '));
+          for (const line of lines) {
+            try {
+              const payload = JSON.parse(line.slice(6));
+              if (!payload.done) {
+                buffer = `${buffer}${buffer ? ' ' : ''}${payload.token}`;
+                setMessages(prev => {
+                  const next = [...prev];
+                  next[next.length - 1] = { role: 'assistant', content: buffer };
+                  return next;
+                });
+              }
+            } catch {
+              // Ignore malformed stream events and continue.
+            }
+          }
+        }
+      }
     } catch (_err) {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Unable to reach AI server. Make sure it is running.' }]);
     } finally {
@@ -58,58 +91,58 @@ export default function AssistantChat({ userType = 'jobseeker' }) {
   return (
     <>
       {!open && (
-        <div className="fixed bottom-5 right-5 z-[9999]">
-          <div className="relative">
-            <div className="assistant-badge absolute -top-2 -right-1 text-indigo-700 text-[10px] font-semibold px-2 py-0.5 rounded-full">AI</div>
+        <div style={{ position: 'fixed', right: 20, bottom: 20, zIndex: 9999 }}>
+          <div style={{ position: 'relative' }}>
+            <div style={{ position: 'absolute', top: -8, right: -4, fontSize: 10, fontWeight: 700, color: '#3730a3', background: '#fff', borderRadius: 999, padding: '2px 6px', border: '1px solid #e2e8f0' }}>AI</div>
             <button
               onClick={() => setOpen(true)}
-              className="assistant-halo w-16 h-16 rounded-full shadow-2xl text-white bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 hover:opacity-95 flex items-center justify-center border border-white/30 transition-transform hover:scale-105 active:scale-95"
+              style={{ width: 62, height: 62, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.4)', boxShadow: '0 12px 28px rgba(79,70,229,0.35)', background: 'linear-gradient(135deg,#4f46e5,#7c3aed,#ec4899)', color: '#fff', display: 'grid', placeItems: 'center', cursor: 'pointer' }}
               aria-label="Open Payout Assistant"
               title="Ask Payout"
             >
-              <Bot className="w-7 h-7 drop-shadow" />
+              <Bot size={26} />
             </button>
           </div>
         </div>
       )}
 
       {open && (
-        <div className="fixed bottom-5 right-5 z-50 w-[360px] max-w-[92vw]">
-          <div className="rounded-2xl shadow-2xl border overflow-hidden bg-white">
+        <div style={{ position: 'fixed', right: 20, bottom: 20, zIndex: 9999, width: 380, maxWidth: '95vw' }}>
+          <div style={{ borderRadius: 16, boxShadow: '0 20px 40px rgba(15,23,42,0.25)', border: '1px solid #cbd5e1', overflow: 'hidden', background: '#fff' }}>
             {/* Header */}
-            <div className="px-4 py-3 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5" />
+            <div style={{ padding: '10px 12px', background: 'linear-gradient(90deg,#4f46e5,#7c3aed,#ec4899)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <MessageCircle size={18} />
                 <div>
-                  <div className="text-sm font-semibold">Payout Assistant</div>
-                  <div className="text-[11px] opacity-90">Friendly AI guide for your portal</div>
+                  <div style={{ fontSize: 14, fontWeight: 700 }}>Payout Assistant</div>
+                  <div style={{ fontSize: 11, opacity: 0.9 }}>Friendly AI guide for your portal</div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1 bg-white/20 rounded-full px-2 py-1 text-xs">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4, borderRadius: 999, padding: '4px 8px', background: 'rgba(255,255,255,0.2)' }}>
                   <PersonaIcon />
                   <select
                     value={persona}
                     onChange={(e) => setPersona(e.target.value)}
-                    className="bg-transparent text-white outline-none"
+                    style={{ background: 'transparent', color: '#fff', border: 'none', outline: 'none', fontSize: 12 }}
                   >
                     <option value="jobseeker">Job Seeker</option>
                     <option value="recruiter">Recruiter</option>
                   </select>
                 </div>
-                <button className="p-1 hover:bg-white/20 rounded" onClick={() => setOpen(false)} aria-label="Close">
-                  <X className="w-4 h-4" />
+                <button style={{ border: 'none', background: 'rgba(255,255,255,0.2)', borderRadius: 8, padding: 5, color: '#fff', cursor: 'pointer' }} onClick={() => setOpen(false)} aria-label="Close">
+                  <X size={14} />
                 </button>
               </div>
             </div>
 
             {/* Suggestions */}
-            <div className="px-3 py-2 border-b bg-gray-50 flex flex-wrap gap-2">
+            <div style={{ padding: 10, borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {suggestions.map((s) => (
                 <button
                   key={s}
                   onClick={() => pickSuggestion(s)}
-                  className="text-xs px-2 py-1 rounded-full border bg-white hover:bg-gray-100"
+                  style={{ fontSize: 12, padding: '4px 10px', borderRadius: 999, border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer' }}
                 >
                   {s}
                 </button>
@@ -117,37 +150,33 @@ export default function AssistantChat({ userType = 'jobseeker' }) {
             </div>
 
             {/* Messages */}
-            <div ref={listRef} className="h-72 overflow-y-auto p-4 space-y-3 bg-white">
+            <div ref={listRef} style={{ height: 290, overflowY: 'auto', padding: 12, background: '#fff' }}>
               {messages.map((m, i) => (
-                <div key={i} className={`flex ${m.role === 'assistant' ? '' : 'justify-end'}`}>
+                <div key={i} style={{ display: 'flex', justifyContent: m.role === 'assistant' ? 'flex-start' : 'flex-end', marginBottom: 8 }}>
                   <div
-                    className={`max-w-[80%] px-3 py-2 rounded-2xl shadow ${
-                      m.role === 'assistant'
-                        ? 'bg-gray-50 text-gray-800'
-                        : 'bg-indigo-600 text-white'
-                    }`}
+                    style={{ maxWidth: '82%', padding: '8px 10px', borderRadius: 14, boxShadow: '0 1px 4px rgba(15,23,42,0.08)', background: m.role === 'assistant' ? '#f8fafc' : '#4f46e5', color: m.role === 'assistant' ? '#1e293b' : '#fff', whiteSpace: 'pre-wrap', lineHeight: 1.4, fontSize: 13 }}
                   >
                     {m.content}
                   </div>
                 </div>
               ))}
               {loading && (
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <span className="animate-pulse">Thinking…</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: '#64748b' }}>
+                  <span>Thinking...</span>
                 </div>
               )}
             </div>
 
             {/* Input */}
-            <form onSubmit={sendMessage} className="flex gap-2 p-3 border-t bg-gray-50">
+            <form onSubmit={sendMessage} style={{ display: 'flex', gap: 8, padding: 10, borderTop: '1px solid #e2e8f0', background: '#f8fafc' }}>
               <input
-                className="flex-1 border rounded-full px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                style={{ flex: 1, border: '1px solid #cbd5e1', borderRadius: 999, padding: '8px 12px', fontSize: 13, outline: 'none' }}
                 placeholder="Ask anything about the app…"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
               />
               <button
-                className="px-4 py-2 rounded-full text-sm text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500"
+                style={{ border: 'none', borderRadius: 999, padding: '8px 14px', fontSize: 13, color: '#fff', cursor: 'pointer', background: 'linear-gradient(90deg,#4f46e5,#7c3aed,#ec4899)' }}
                 disabled={loading}
               >
                 Send

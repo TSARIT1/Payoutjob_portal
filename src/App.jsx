@@ -17,8 +17,18 @@ import Blogs from "./student/pages/Blogs";
 import AssistantChat from "./components/AssistantChat";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Notifications from "./pages/Notifications";
+import ContactUs from "./pages/ContactUs";
+import CompanyWorkspace from "./pages/CompanyWorkspace";
+import StudentTracker from "./student/pages/StudentTracker";
+import EmployerTracker from "./employer/EmployerTracker";
+import AdminLogin from "./admin/AdminLogin";
+import AdminDashboard from "./admin/AdminDashboard";
+import { useAuth } from "./contexts/AuthContext";
 
 function App() {
+  const { user } = useAuth();
+  const assistantPersona = user?.role === "Employer" ? "recruiter" : "jobseeker";
+
   return (
     <>
       <Routes>
@@ -28,6 +38,7 @@ function App() {
         <Route path="/employer/login" element={<EmpLogin />} />
         <Route path="/employer/register" element={<EmpRegister />} />
         <Route path="/employer/welcome" element={<EmpWelcome />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
         <Route
           path="/profile/setup"
           element={
@@ -53,6 +64,8 @@ function App() {
           }
         />
         <Route path="/blogs" element={<Blogs />} />
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/company/:slug" element={<CompanyWorkspace />} />
         <Route
           path="/applied-jobs"
           element={
@@ -74,6 +87,22 @@ function App() {
           }
         />
         <Route
+          path="/tracker/student"
+          element={
+            <ProtectedRoute allowedRoles={["Student"]} redirectTo="/login" unauthorizedPath="/">
+              <StudentTracker />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tracker/employer"
+          element={
+            <ProtectedRoute allowedRoles={["Employer"]} redirectTo="/employer/login" unauthorizedPath="/">
+              <EmployerTracker />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/dashboard"
           element={
             <ProtectedRoute allowedRoles={["Employer"]} redirectTo="/employer/login" unauthorizedPath="/">
@@ -81,8 +110,16 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["Admin"]} redirectTo="/admin/login" unauthorizedPath="/">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-      <AssistantChat userType="jobseeker" />
+      <AssistantChat userType={assistantPersona} />
     </>
   );
 }

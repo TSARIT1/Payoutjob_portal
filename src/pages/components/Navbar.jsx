@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiMenu, FiX, FiLogIn, FiBell, FiUser, FiSettings, FiLogOut, FiBriefcase, FiMoon, FiSun, FiChevronRight } from 'react-icons/fi';
+import { FiMenu, FiX, FiLogIn, FiBell, FiUser, FiLogOut, FiBriefcase, FiMoon, FiSun, FiChevronRight, FiShield, FiBarChart2, FiMail } from 'react-icons/fi';
 import { FaUser } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -22,6 +22,8 @@ const Navbar = () => {
 
   const avatarUrl = user?.avatar || 'https://static.vecteezy.com/system/resources/previews/036/594/092/non_2x/man-empty-avatar-photo-placeholder-for-social-networks-resumes-forums-and-dating-sites-male-and-female-no-photo-images-for-unfilled-user-profile-free-vector.jpg';
   const isStudentUser = user?.role?.toLowerCase() === 'student';
+  const isEmployerUser = user?.role?.toLowerCase() === 'employer';
+  const isAdminUser = user?.role?.toLowerCase() === 'admin';
   const shouldShowEmployerLinks = !isAuthenticated || !isStudentUser;
 
   useEffect(() => {
@@ -122,7 +124,7 @@ const Navbar = () => {
           className="logo"
           whileHover={{ scale: 1.04 }}
         >
-          <a href="/">Payout<span>Job</span></a>
+          <Link to="/">Payout<span>Job</span></Link>
         </motion.div>
 
         <nav className="desktop-nav">
@@ -131,14 +133,14 @@ const Navbar = () => {
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.95 }}
             >
-              <a href="/">{t('nav.home')}</a>
+              <Link to="/">{t('nav.home')}</Link>
             </motion.li>
 
             <motion.li
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.95 }}
             >
-              <a href="/ai-tools">{t('nav.aiTools')}</a>
+              <Link to="/ai-tools">{t('nav.aiTools')}</Link>
             </motion.li>
 
             <motion.li
@@ -151,7 +153,7 @@ const Navbar = () => {
               onBlur={() => setIsJobsMenuOpen(false)}
             >
               <div className="jobs-link">
-                <a href="/job">{t('nav.jobs')}</a>
+                <Link to="/job">{t('nav.jobs')}</Link>
                 <span className="badge-new">New</span>
               </div>
               <AnimatePresence>
@@ -186,7 +188,7 @@ const Navbar = () => {
               onBlur={() => setIsCompaniesMenuOpen(false)}
             >
               <div className="companies-link">
-                <a href="/companies">{t('nav.companies')}</a>
+                <Link to="/companies">{t('nav.companies')}</Link>
               </div>
               <AnimatePresence>
                 {isCompaniesMenuOpen && (
@@ -286,6 +288,9 @@ const Navbar = () => {
                     <Link to="/employer/register" onClick={() => setIsEmployerMenuOpen(false)}>
                       <FiUser /> {t('nav.register')}
                     </Link>
+                    <Link to="/admin/login" onClick={() => setIsEmployerMenuOpen(false)}>
+                      <FiShield /> Super Admin
+                    </Link>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -293,16 +298,18 @@ const Navbar = () => {
           )}
           {isAuthenticated ? (
             <>
-              <a href="/notifications">
-                <motion.button
-                  className="notifications-btn cursor-pointer"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  title="Notifications"
-                >
-                  <FiBell />
-                </motion.button>
-              </a>
+              {isStudentUser && (
+                <Link to="/notifications">
+                  <motion.button
+                    className="notifications-btn cursor-pointer"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    title="Notifications"
+                  >
+                    <FiBell />
+                  </motion.button>
+                </Link>
+              )}
               <motion.button
                 className="profile-btn cursor-pointer"
                 whileHover={{ scale: 1.05 }}
@@ -363,11 +370,41 @@ const Navbar = () => {
                 </div>
               </div>
               <div className="profile-dropdown-menu">
-                <Link to="/profile" onClick={() => setIsProfileDropdownOpen(false)}>
-                  <FaUser /> View Profile
-                </Link>
-                <Link to="/applied-jobs" onClick={() => setIsProfileDropdownOpen(false)}>
-                  <FiBriefcase /> Applied Jobs
+                {isStudentUser && (
+                  <>
+                    <Link to="/profile" onClick={() => setIsProfileDropdownOpen(false)}>
+                      <FaUser /> View Profile
+                    </Link>
+                    <Link to="/applied-jobs" onClick={() => setIsProfileDropdownOpen(false)}>
+                      <FiBriefcase /> Applied Jobs
+                    </Link>
+                    <Link to="/tracker/student" onClick={() => setIsProfileDropdownOpen(false)}>
+                      <FiBarChart2 /> Job Seeker Tracker
+                    </Link>
+                  </>
+                )}
+                {isEmployerUser && (
+                  <>
+                    <Link to="/dashboard" onClick={() => setIsProfileDropdownOpen(false)}>
+                      <FiBriefcase /> Employer Dashboard
+                    </Link>
+                    <Link to="/tracker/employer" onClick={() => setIsProfileDropdownOpen(false)}>
+                      <FiBarChart2 /> Employer Tracker
+                    </Link>
+                    {user?.companySlug && (
+                      <Link to={`/company/${user.companySlug}`} onClick={() => setIsProfileDropdownOpen(false)}>
+                        <FiShield /> Company Workspace
+                      </Link>
+                    )}
+                  </>
+                )}
+                {isAdminUser && (
+                  <Link to="/admin/dashboard" onClick={() => setIsProfileDropdownOpen(false)}>
+                    <FiShield /> Super Admin Dashboard
+                  </Link>
+                )}
+                <Link to="/contact" onClick={() => setIsProfileDropdownOpen(false)}>
+                  <FiMail /> Contact Us
                 </Link>
                 <button onClick={handleLogout} className="logout-btn">
                   <FiLogOut /> Logout
@@ -445,17 +482,22 @@ const Navbar = () => {
                   <a href="/employer/register" onClick={() => setIsMobileMenuOpen(false)}>
                     <FiUser /> {t('nav.register')}
                   </a>
+                  <a href="/admin/login" onClick={() => setIsMobileMenuOpen(false)}>
+                    <FiShield /> Super Admin
+                  </a>
                 </li>
               )}
               {isAuthenticated ? (
                 <>
-                  <li>
-                    <a href="/notifications" onClick={() => setIsMobileMenuOpen(false)}>
-                    <button className="mobile-notifications-btn" title="Notifications">
-                      <FiBell />
-                    </button>
-                    </a>
-                  </li>
+                  {isStudentUser && (
+                    <li>
+                      <a href="/notifications" onClick={() => setIsMobileMenuOpen(false)}>
+                      <button className="mobile-notifications-btn" title="Notifications">
+                        <FiBell />
+                      </button>
+                      </a>
+                    </li>
+                  )}
                   <li>
                     <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)}>
                       <button className="mobile-profile-btn" title="Profile">
@@ -463,9 +505,44 @@ const Navbar = () => {
                       </button>
                     </Link>
                   </li>
+                  {isStudentUser && (
+                    <>
+                      <li>
+                        <Link to="/applied-jobs" onClick={() => setIsMobileMenuOpen(false)}>
+                          <FiBriefcase /> Applied Jobs
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="/tracker/student" onClick={() => setIsMobileMenuOpen(false)}>
+                          <FiBarChart2 /> Job Seeker Tracker
+                        </Link>
+                      </li>
+                    </>
+                  )}
+                  {isEmployerUser && (
+                    <>
+                      <li>
+                        <Link to="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                          <FiBriefcase /> Employer Dashboard
+                        </Link>
+                      </li>
+                      <li>
+                        <Link to="/tracker/employer" onClick={() => setIsMobileMenuOpen(false)}>
+                          <FiBarChart2 /> Employer Tracker
+                        </Link>
+                      </li>
+                    </>
+                  )}
+                  {isAdminUser && (
+                    <li>
+                      <Link to="/admin/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                        <FiShield /> Super Admin Dashboard
+                      </Link>
+                    </li>
+                  )}
                   <li>
-                    <Link to="/applied-jobs" onClick={() => setIsMobileMenuOpen(false)}>
-                      <FiBriefcase /> Applied Jobs
+                    <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
+                      <FiMail /> Contact Us
                     </Link>
                   </li>
                   <li>

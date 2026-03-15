@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import OpenAI from 'openai';
@@ -328,6 +329,30 @@ function normalizeObject(value, fallback = {}) {
   return value && typeof value === 'object' && !Array.isArray(value) ? value : fallback;
 }
 
+function slugifyCompanyName(name) {
+  return String(name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+}
+
+function generateEmployerApiKey() {
+  return `pst_live_${crypto.randomBytes(12).toString('hex')}`;
+}
+
+async function logActivity({ userId = null, userRole = '', actionType, details = {}, source = 'portal' }) {
+  try {
+    await query(
+      `INSERT INTO activity_logs (user_id, user_role, action_type, details_json, source)
+       VALUES (?, ?, ?, ?, ?)`,
+      [userId, userRole, actionType, JSON.stringify(details || {}), source]
+    );
+  } catch {
+    // Logging should never break user actions.
+  }
+}
+
 function buildUserFromRecord(record) {
   const storedProfile = normalizeObject(parseJson(record.profile_json, {}), {});
   const personalInfo = normalizeObject(storedProfile.personalInfo, {});
@@ -342,6 +367,9 @@ function buildUserFromRecord(record) {
     phone: record.phone || '',
     avatar,
     role: record.role,
+    onboardingStatus: record.onboarding_status || 'approved',
+    companySlug: record.company_slug || null,
+    externalApiKey: record.external_api_key || null,
     location,
     title: record.title || '',
     profileCompletion: record.profile_completion || 0,
@@ -352,6 +380,15 @@ function buildUserFromRecord(record) {
     return {
       ...baseUser,
       companyName: record.company_name || storedProfile.name || record.full_name,
+      onboardingNote: record.onboarding_note || '',
+      dashboardPreferences: normalizeObject(storedProfile.dashboardPreferences, { theme: 'light', lastLogin: null }),
+      ...storedProfile
+    };
+  }
+
+  if (record.role === 'Admin') {
+    return {
+      ...baseUser,
       dashboardPreferences: normalizeObject(storedProfile.dashboardPreferences, { theme: 'light', lastLogin: null }),
       ...storedProfile
     };
@@ -612,6 +649,9 @@ app.post('/api/auth/register', asyncRoute(async (req, res) => {
   const password = String(req.body.password || '');
   const phone = String(req.body.phone || '').trim();
   const companyName = req.body.companyName || null;
+  const companySlug = role === 'Employer' ? (slugifyCompanyName(companyName || fullName) || `company-${Date.now()}`) : null;
+  const onboardingStatus = role === 'Employer' ? 'pending' : 'approved';
+  const externalApiKey = role === 'Employer' ? generateEmployerApiKey() : null;
   const university = req.body.university || null;
 
   if (!fullName || !email || !password) {
@@ -625,8 +665,8 @@ app.post('/api/auth/register', asyncRoute(async (req, res) => {
 
   const passwordHash = await bcrypt.hash(password, 10);
   const result = await query(
-    `INSERT INTO users (role, full_name, email, password_hash, phone, university, company_name, title, location)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO users (role, full_name, email, password_hash, phone, university, company_name, company_slug, title, onboarding_status, external_api_key, location)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       role,
       fullName,
@@ -635,7 +675,10 @@ app.post('/api/auth/register', asyncRoute(async (req, res) => {
       phone,
       role === 'Student' ? university : null,
       role === 'Employer' ? companyName : null,
+      companySlug,
       req.body.title || null,
+      onboardingStatus,
+      externalApiKey,
       req.body.location || null
     ]
   );
@@ -646,6 +689,21 @@ app.post('/api/auth/register', asyncRoute(async (req, res) => {
   const userRecord = await getUserRecordById(result.insertId);
   const user = buildUserFromRecord(userRecord);
   const token = createToken(user);
+  await logActivity({
+    userId: user.id,
+    userRole: user.role,
+    actionType: 'auth.register',
+    details: { email: user.email, onboardingStatus: user.onboardingStatus }
+  });
+
+  if (user.role === 'Employer' && user.onboardingStatus !== 'approved') {
+    return res.status(202).json({
+      token,
+      user,
+      message: 'Employer account created and sent for admin approval. Login access will be enabled after approval.'
+    });
+  }
+
   res.status(201).json({ token, user, message: 'Account created successfully.' });
 }));
 
@@ -671,7 +729,16 @@ app.post('/api/auth/login', asyncRoute(async (req, res) => {
   }
 
   const user = buildUserFromRecord(userRecord);
+
+  if (user.role === 'Employer' && user.onboardingStatus !== 'approved') {
+    return res.status(403).json({
+      error: 'Your employer onboarding is pending admin approval. Please contact support if urgent.',
+      onboardingStatus: user.onboardingStatus
+    });
+  }
+
   const token = createToken(user);
+  await logActivity({ userId: user.id, userRole: user.role, actionType: 'auth.login', details: { email: user.email } });
   res.json({ token, user, message: 'Login successful.' });
 }));
 
@@ -760,6 +827,19 @@ app.post('/api/jobs/:jobId/apply', authRequired(['Student']), asyncRoute(async (
      VALUES (?, ?, 'review', ?, ?)`,
     [jobId, req.authUser.id, req.body.candidateNote || '', JSON.stringify(req.body.responses || null)]
   );
+
+  await query(
+    `INSERT INTO notifications (user_id, type, title, body, link)
+     VALUES (?, 'application', 'Application Submitted', ?, '/applied-jobs')`,
+    [req.authUser.id, `Your application for job #${jobId} was submitted successfully.`]
+  );
+
+  await logActivity({
+    userId: req.authUser.id,
+    userRole: req.authUser.role,
+    actionType: 'student.apply_job',
+    details: { jobId }
+  });
 
   res.status(201).json({ message: 'Application submitted successfully.' });
 }));
@@ -967,6 +1047,13 @@ app.post('/api/employer/jobs', authRequired(['Employer']), asyncRoute(async (req
      WHERE j.id = ?`,
     [result.insertId]
   );
+
+  await logActivity({
+    userId: req.authUser.id,
+    userRole: req.authUser.role,
+    actionType: 'employer.create_job',
+    details: { jobId: result.insertId, title: req.body.title }
+  });
 
   res.status(201).json({ job: mapJobRecord(rows[0]), message: 'Job created successfully.' });
 }));
@@ -1345,6 +1432,272 @@ app.get('/api/employer/candidates', authRequired(['Employer']), asyncRoute(async
       experience: normalizeArray(profile.experience).length
     }));
   res.json({ candidates });
+}));
+
+app.get('/api/tracker/student', authRequired(['Student']), asyncRoute(async (req, res) => {
+  const [{ total = 0 } = {}] = await query('SELECT COUNT(*) AS total FROM applications WHERE student_id = ?', [req.authUser.id]);
+  const [{ shortlisted = 0 } = {}] = await query("SELECT COUNT(*) AS shortlisted FROM applications WHERE student_id = ? AND status IN ('review', 'interview')", [req.authUser.id]);
+  const [{ interviews = 0 } = {}] = await query("SELECT COUNT(*) AS interviews FROM applications WHERE student_id = ? AND status = 'interview'", [req.authUser.id]);
+  const [{ hired = 0 } = {}] = await query("SELECT COUNT(*) AS hired FROM applications WHERE student_id = ? AND status = 'hired'", [req.authUser.id]);
+  const [{ saved = 0 } = {}] = await query('SELECT COUNT(*) AS saved FROM saved_jobs WHERE user_id = ?', [req.authUser.id]);
+  const timeline = await query(
+    `SELECT action_type, created_at
+     FROM activity_logs
+     WHERE user_id = ?
+     ORDER BY created_at DESC
+     LIMIT 20`,
+    [req.authUser.id]
+  );
+  res.json({
+    summary: { totalApplications: total, shortlisted, interviews, hired, savedJobs: saved },
+    timeline
+  });
+}));
+
+app.get('/api/tracker/employer', authRequired(['Employer']), asyncRoute(async (req, res) => {
+  const [{ totalJobs = 0 } = {}] = await query('SELECT COUNT(*) AS totalJobs FROM jobs WHERE employer_id = ?', [req.authUser.id]);
+  const [{ activeJobs = 0 } = {}] = await query("SELECT COUNT(*) AS activeJobs FROM jobs WHERE employer_id = ? AND status = 'active'", [req.authUser.id]);
+  const [{ totalApplications = 0 } = {}] = await query(
+    `SELECT COUNT(*) AS totalApplications
+     FROM applications a
+     INNER JOIN jobs j ON j.id = a.job_id
+     WHERE j.employer_id = ?`,
+    [req.authUser.id]
+  );
+  const [{ hired = 0 } = {}] = await query(
+    `SELECT COUNT(*) AS hired
+     FROM applications a
+     INNER JOIN jobs j ON j.id = a.job_id
+     WHERE j.employer_id = ? AND a.status = 'hired'`,
+    [req.authUser.id]
+  );
+  const timeline = await query(
+    `SELECT action_type, created_at
+     FROM activity_logs
+     WHERE user_id = ?
+     ORDER BY created_at DESC
+     LIMIT 20`,
+    [req.authUser.id]
+  );
+  res.json({ summary: { totalJobs, activeJobs, totalApplications, hired }, timeline });
+}));
+
+app.post('/api/contact-us', asyncRoute(async (req, res) => {
+  if (!ensureDbReady(res)) return;
+  const name = String(req.body.name || '').trim();
+  const email = String(req.body.email || '').trim();
+  const subject = String(req.body.subject || '').trim();
+  const message = String(req.body.message || '').trim();
+  if (!name || !email || !subject || !message) {
+    return res.status(400).json({ error: 'Name, email, subject and message are required.' });
+  }
+  await query(
+    `INSERT INTO contact_messages (name, email, phone, company, subject, message)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [name, email, String(req.body.phone || '').trim(), String(req.body.company || '').trim(), subject, message]
+  );
+  res.status(201).json({ message: 'Your message has been submitted. Our team will contact you soon.' });
+}));
+
+app.get('/api/admin/dashboard', authRequired(['Admin']), asyncRoute(async (_req, res) => {
+  const [[stats]] = await Promise.all([
+    query(
+      `SELECT
+         (SELECT COUNT(*) FROM users WHERE role = 'Student') AS students,
+         (SELECT COUNT(*) FROM users WHERE role = 'Employer') AS employers,
+         (SELECT COUNT(*) FROM users WHERE role = 'Employer' AND onboarding_status = 'pending') AS pendingEmployers,
+         (SELECT COUNT(*) FROM jobs) AS jobs,
+         (SELECT COUNT(*) FROM applications) AS applications,
+         (SELECT COUNT(*) FROM contact_messages WHERE status = 'new') AS newContacts`,
+      []
+    )
+  ]);
+
+  const recentActivities = await query(
+    `SELECT al.*, u.full_name
+     FROM activity_logs al
+     LEFT JOIN users u ON u.id = al.user_id
+     ORDER BY al.created_at DESC
+     LIMIT 30`
+  );
+
+  const pendingEmployers = await query(
+    `SELECT id, full_name, email, company_name, company_slug, onboarding_status, created_at
+     FROM users
+     WHERE role = 'Employer' AND onboarding_status = 'pending'
+     ORDER BY created_at DESC`
+  );
+
+  res.json({ stats: stats || {}, recentActivities, pendingEmployers });
+}));
+
+app.get('/api/admin/employers', authRequired(['Admin']), asyncRoute(async (_req, res) => {
+  const employers = await query(
+    `SELECT id, full_name, email, company_name, company_slug, onboarding_status, onboarding_note, external_api_key, created_at
+     FROM users
+     WHERE role = 'Employer'
+     ORDER BY created_at DESC`
+  );
+  res.json({ employers });
+}));
+
+app.patch('/api/admin/employers/:employerId/approve', authRequired(['Admin']), asyncRoute(async (req, res) => {
+  const employerId = Number(req.params.employerId);
+  await query(
+    `UPDATE users
+     SET onboarding_status = 'approved', onboarding_note = ?
+     WHERE id = ? AND role = 'Employer'`,
+    [String(req.body.note || 'Approved by admin').trim(), employerId]
+  );
+  await logActivity({ userId: req.authUser.id, userRole: 'Admin', actionType: 'admin.approve_employer', details: { employerId } });
+  res.json({ message: 'Employer approved successfully.' });
+}));
+
+app.patch('/api/admin/employers/:employerId/reject', authRequired(['Admin']), asyncRoute(async (req, res) => {
+  const employerId = Number(req.params.employerId);
+  await query(
+    `UPDATE users
+     SET onboarding_status = 'rejected', onboarding_note = ?
+     WHERE id = ? AND role = 'Employer'`,
+    [String(req.body.note || 'Please update onboarding details and re-apply.').trim(), employerId]
+  );
+  await logActivity({ userId: req.authUser.id, userRole: 'Admin', actionType: 'admin.reject_employer', details: { employerId } });
+  res.json({ message: 'Employer rejected.' });
+}));
+
+app.get('/api/admin/contact-messages', authRequired(['Admin']), asyncRoute(async (_req, res) => {
+  const messages = await query('SELECT * FROM contact_messages ORDER BY created_at DESC LIMIT 200');
+  res.json({ messages });
+}));
+
+app.post('/api/external/employer/jobs', asyncRoute(async (req, res) => {
+  if (!ensureDbReady(res)) return;
+  const apiKey = String(req.headers['x-employer-api-key'] || '').trim();
+  if (!apiKey) return res.status(401).json({ error: 'Missing x-employer-api-key header.' });
+
+  const employerRows = await query(
+    `SELECT id, role, company_name, onboarding_status, company_slug
+     FROM users
+     WHERE external_api_key = ? AND role = 'Employer'
+     LIMIT 1`,
+    [apiKey]
+  );
+  const employer = employerRows[0];
+  if (!employer) return res.status(401).json({ error: 'Invalid employer API key.' });
+  if (employer.onboarding_status !== 'approved') {
+    return res.status(403).json({ error: 'Employer onboarding is not approved.' });
+  }
+
+  const title = String(req.body.title || '').trim();
+  if (!title) return res.status(400).json({ error: 'title is required.' });
+
+  const result = await query(
+    `INSERT INTO jobs (employer_id, title, department, location, type, status, salary, experience, description, requirements)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      employer.id,
+      title,
+      String(req.body.department || 'Operations'),
+      String(req.body.location || 'Remote'),
+      String(req.body.type || 'Full-time'),
+      String(req.body.status || 'active'),
+      String(req.body.salary || ''),
+      String(req.body.experience || ''),
+      String(req.body.description || ''),
+      String(req.body.requirements || '')
+    ]
+  );
+
+  await logActivity({
+    userId: employer.id,
+    userRole: 'Employer',
+    actionType: 'external_api.create_job',
+    details: { jobId: result.insertId, title },
+    source: 'external-api'
+  });
+
+  res.status(201).json({
+    message: 'Job posted successfully from external API.',
+    jobId: result.insertId,
+    companySlug: employer.company_slug
+  });
+}));
+
+app.get('/api/company/:slug/portal-summary', asyncRoute(async (req, res) => {
+  if (!ensureDbReady(res)) return;
+  const slug = String(req.params.slug || '').trim();
+  const rows = await query(
+    `SELECT id, company_name, company_slug, onboarding_status, location
+     FROM users
+     WHERE role = 'Employer' AND company_slug = ?
+     LIMIT 1`,
+    [slug]
+  );
+  const company = rows[0];
+  if (!company) return res.status(404).json({ error: 'Company workspace not found.' });
+
+  const [{ totalJobs = 0 } = {}] = await query('SELECT COUNT(*) AS totalJobs FROM jobs WHERE employer_id = ?', [company.id]);
+  const [{ activeJobs = 0 } = {}] = await query("SELECT COUNT(*) AS activeJobs FROM jobs WHERE employer_id = ? AND status = 'active'", [company.id]);
+  const [{ totalApplications = 0 } = {}] = await query(
+    `SELECT COUNT(*) AS totalApplications
+     FROM applications a
+     INNER JOIN jobs j ON j.id = a.job_id
+     WHERE j.employer_id = ?`,
+    [company.id]
+  );
+
+  res.json({
+    company: {
+      id: company.id,
+      name: company.company_name,
+      slug: company.company_slug,
+      onboardingStatus: company.onboarding_status,
+      location: company.location
+    },
+    summary: { totalJobs, activeJobs, totalApplications }
+  });
+}));
+
+app.post('/ai/chat/stream', asyncRoute(async (req, res) => {
+  const queryText = String(req.body?.message || '').trim();
+  if (!queryText) return res.status(400).json({ error: 'Missing message' });
+
+  const userType = req.body?.userType;
+  const queryTokens = tokenize(queryText);
+  const ranked = KNOWLEDGE_BASE
+    .map((doc) => ({ doc, score: scoreDocument(queryTokens, queryText, doc) }))
+    .filter((item) => item.score > 0)
+    .sort((left, right) => right.score - left.score)
+    .slice(0, Math.max(1, config.aiMaxContextDocs));
+
+  const fallbackReply = buildLocalFallbackReply(queryText, userType, ranked);
+  const fullReply = openai
+    ? (await (async () => {
+      const completion = await openai.chat.completions.create({
+        model: config.openaiModel,
+        temperature: 0.2,
+        messages: [
+          { role: 'system', content: 'You are Payout Job AI Assistant. Keep responses concise and practical.' },
+          { role: 'user', content: queryText }
+        ]
+      });
+      return formatAssistantReply(completion.choices?.[0]?.message?.content || 'No response generated.');
+    })())
+    : fallbackReply;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  const chunks = fullReply.split(' ');
+  for (let index = 0; index < chunks.length; index += 1) {
+    const token = chunks[index];
+    res.write(`data: ${JSON.stringify({ token, done: false })}\n\n`);
+    // Artificial pacing to emulate real-time streaming UX.
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  res.write(`data: ${JSON.stringify({ token: '', done: true })}\n\n`);
+  res.end();
 }));
 
 app.use((error, _req, res, _next) => {
