@@ -3,10 +3,12 @@ import { FiEdit2 } from 'react-icons/fi';
 import { FaLinkedin, FaGithub, FaTwitter, FaGlobe } from 'react-icons/fa';
 
 const ProfileHeader = ({ data, socialLinks, onEdit }) => {
+  const imageSrc = data?.image?.trim() ? data.image : '/default-avatar.png';
+
   return (
     <div className="profile-header">
       <div className="profile-image-container">
-        <img src={data.image} alt="Profile" className="profile-image" />
+        <img src={imageSrc} alt="Profile" className="profile-image" />
         <button className="edit-button" onClick={onEdit}>
           <FiEdit2 size={14} />
         </button>

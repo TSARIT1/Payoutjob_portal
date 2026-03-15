@@ -12,7 +12,7 @@ const Projects = ({ data, onSave }) => {
     skills: [],
     link: ''
   });
-  const [projects, setProjects] = useState(data);
+  const [projects, setProjects] = useState(Array.isArray(data) ? data : []);
   const [newSkill, setNewSkill] = useState('');
 
   const handleChange = (e) => {
@@ -49,7 +49,14 @@ const Projects = ({ data, onSave }) => {
 
   const handleEdit = (index) => {
     setEditingIndex(index);
-    setFormData(projects[index]);
+    const projectToEdit = projects[index] || {};
+    setFormData({
+      title: projectToEdit.title || '',
+      duration: projectToEdit.duration || '',
+      description: projectToEdit.description || '',
+      skills: Array.isArray(projectToEdit.skills) ? projectToEdit.skills : [],
+      link: projectToEdit.link || ''
+    });
     setIsEditing(true);
   };
 
@@ -174,7 +181,7 @@ const Projects = ({ data, onSave }) => {
                   <h3>{project.title}</h3>
                   <p>{project.duration}</p>
                   <p className="description">{project.description}</p>
-                  {project.skills.length > 0 && (
+                  {Array.isArray(project.skills) && project.skills.length > 0 && (
                     <div className="skills-tags">
                       {project.skills.map((skill, i) => (
                         <span key={i} className="skill-tag">{skill}</span>
